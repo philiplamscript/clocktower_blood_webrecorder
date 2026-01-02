@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Plus } from 'lucide-react';
-import DeathLedger from '../ledger/DeathLedger';
+import DeathLedger from '../ledger/DeathLedger/DeathLedger';
 
 interface DeathsTabProps {
   deaths: any[];

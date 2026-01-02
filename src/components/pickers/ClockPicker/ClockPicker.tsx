@@ -7,7 +7,7 @@ import {
   Skull,
 } from 'lucide-react';
 
-import {REASON_CYCLE} from '../../type';
+import {REASON_CYCLE} from '../../../../type';
 
 // --- HELPER FOR PIE PATHS ---
 const getSlicePath = (index: number, total: number, innerRadius: number, outerRadius: number, cx: number = 144, cy: number = 144) => {

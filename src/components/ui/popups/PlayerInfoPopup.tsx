@@ -7,8 +7,8 @@ import {
   X
 } from 'lucide-react';
 
-import { REASON_CYCLE } from '../../type';
-import TextRotaryPicker from '../RotaryPicker/TextRotaryPicker';
+import { REASON_CYCLE } from '../../../type';
+import TextRotaryPicker from '../../pickers/RotaryPicker/TextRotaryPicker';
 import VoteHistoryClock from '../VoteHistoryClock';
 
 interface PlayerInfoPopupProps {
