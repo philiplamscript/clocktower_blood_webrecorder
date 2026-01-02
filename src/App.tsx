@@ -178,6 +178,15 @@ export default function App() {
     Demon: 'text-red-600'
   };
 
+  // Function to get category for a role
+  const getRoleCategory = (roleName: string): string | null => {
+    for (const [category, roles] of Object.entries(chars)) {
+      const found = roles.find((r: Character) => r.name === roleName);
+      if (found) return category;
+    }
+    return null;
+  };
+
   return (
     <div className={`fixed inset-0 bg-slate-100 flex flex-col font-sans select-none ${fontSizeClass}`} onMouseUp={() => setIsDragging(false)}>
       
@@ -446,18 +455,23 @@ export default function App() {
             <div className="p-3 max-h-[320px] overflow-y-auto">
               {showRoleSelector.roles.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {showRoleSelector.roles.map((item, idx) => (
-                    <button 
-                      key={idx} 
-                      onClick={() => {
-                        updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
-                        setShowRoleSelector(null);
-                      }}
-                      className={`bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left ${categoryColors[item.category as keyof typeof categoryColors]}`}
-                    >
-                      {item.role}
-                    </button>
-                  ))}
+                  {showRoleSelector.roles.map((item, idx) => {
+                    const category = getRoleCategory(item.role);
+                    const colorClass = category ? categoryColors[category as keyof typeof categoryColors] : 'text-slate-700';
+                    
+                    return (
+                      <button 
+                        key={idx} 
+                        onClick={() => {
+                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
+                          setShowRoleSelector(null);
+                        }}
+                        className={`bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left ${colorClass}`}
+                      >
+                        {item.role}
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-slate-500 text-xs">No roles defined yet.</p>
