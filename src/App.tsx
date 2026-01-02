@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { 
   Users, 
@@ -176,6 +178,13 @@ export default function App() {
     Outsider: 'text-blue-200',
     Minion: 'text-red-400',
     Demon: 'text-red-600'
+  };
+
+  const categoryBg = {
+    Townsfolk: 'bg-blue-100 hover:bg-blue-200',
+    Outsider: 'bg-blue-50 hover:bg-blue-100',
+    Minion: 'bg-orange-50 hover:bg-orange-100',
+    Demon: 'bg-red-100 hover:bg-red-200'
   };
 
   return (
@@ -453,7 +462,7 @@ export default function App() {
                         updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
                         setShowRoleSelector(null);
                       }}
-                      className={`bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left ${categoryColors[item.category as keyof typeof categoryColors]}`}
+                      className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left`}
                     >
                       {item.role}
                     </button>
