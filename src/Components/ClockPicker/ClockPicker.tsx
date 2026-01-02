@@ -1,3 +1,5 @@
+"use client";
+
 import  { useState,  useRef, useEffect, useCallback } from 'react';
 
 
@@ -111,11 +113,8 @@ const ClockPicker = ({
     }
     let currentVoters = value.split(',').filter(v => v !== "");
     const exists = currentVoters.includes(numStr);
-    if (forceAction === 'remove' || (!forceAction && exists)) {
-      currentVoters = currentVoters.filter(v => v !== numStr);
-    } else {
-      currentVoters = [...new Set([...currentVoters, numStr])].sort((a, b) => parseInt(a) - parseInt(b));
-    }
+    if (forceAction === 'remove' || (!forceAction && exists)) currentVoters = currentVoters.filter(v => v !== numStr);
+    else if (forceAction === 'add' || (!forceAction && !exists)) currentVoters = [...new Set([...currentVoters, numStr])].sort((a, b) => parseInt(a) - parseInt(b));
     onChange(currentVoters.join(','));
   };
 
@@ -240,11 +239,10 @@ const ClockPicker = ({
                     if (onSetBoth) { 
                       setGestureOrigin(numStr); 
                       setGestureCurrent(numStr); 
-                    } else { 
+                    } else if (isMulti) { 
                       const action = isActive ? 'remove' : 'add';
                       setSlideAction(action); 
                       setGestureCurrent(numStr);
-                      toggleNumber(num, action); 
                     }
                   };
 
@@ -261,9 +259,8 @@ const ClockPicker = ({
                       onTouchEnd={() => handleTouchEnd(num)}
                       onClick={handleClick}
                       onMouseEnter={() => { 
-                        if (isSliding) {
-                          if (onSetBoth) setGestureCurrent(numStr);
-                          else if (isMulti) {
+                        if (isSliding && isMulti && !onSetBoth) {
+                          if (numStr !== gestureCurrent) {
                             setGestureCurrent(numStr);
                             toggleNumber(num, slideAction!);
                           }
