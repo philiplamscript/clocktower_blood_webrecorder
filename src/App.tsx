@@ -71,6 +71,7 @@ export default function App() {
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
+  const [showRoleSelector, setShowRoleSelector] = useState<{ playerNo: number; roles: string[] } | null>(null);
 
   // Auto-Save Effect
   useEffect(() => {
