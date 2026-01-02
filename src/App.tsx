@@ -333,15 +333,69 @@ export default function App() {
       {/* QUICK PLAYER INFO POPUP */}
       {popupPlayerNo !== null && (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setPopupPlayerNo(null)}>
-          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[280px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
-            <div className={`px-3 py-2 flex justify-between items-center ${deadPlayers.includes(popupPlayerNo) ? 'bg-slate-900' : 'bg-blue-600'}`}>
-              <div className="flex items-center gap-2">
-                <span className="text-white font-black text-[10px] uppercase">Player {popupPlayerNo}</span>
-                {deadPlayers.includes(popupPlayerNo) && <Skull size={10} className="text-red-500" />}
+          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Player Ribbon */}
+            <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
+              <div className="flex flex-wrap items-center gap-1 justify-center">
+                {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
+                  const isDead = deadPlayers.includes(num);
+                  const hasInfo = players.find(p => p.no === num)?.inf !== '';
+                  return (
+                    <button 
+                      key={num} 
+                      onClick={() => setPopupPlayerNo(num)}
+                      className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black transition-all border shadow-sm ${
+                        num === popupPlayerNo
+                          ? 'bg-red-600 text-white border-red-400'
+                          : isDead 
+                            ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                            : hasInfo 
+                              ? 'bg-blue-600 text-white border-blue-400' 
+                              : 'bg-slate-700 text-slate-300 border-slate-600'
+                      } active:scale-90`}
+                    >
+                      {isDead ? <Skull size={8} /> : num}
+                    </button>
+                  );
+                })}
               </div>
-              <button onClick={() => setPopupPlayerNo(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
             </div>
-            <div className="p-3 space-y-3">
+
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Death Info */}
+              <div className="bg-slate-50 rounded border p-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Skull size={12} className="text-red-500" />
+                  <span className="text-[9px] font-black text-slate-600 uppercase">Status</span>
+                </div>
+                {deadPlayers.includes(popupPlayerNo) ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-red-600">Day {players.find(p => p.no === popupPlayerNo)?.day}</span>
+                    <TextRotaryPicker 
+                      value={players.find(p => p.no === popupPlayerNo)?.reason || ''} 
+                      options={REASON_CYCLE} 
+                      onChange={(val) => {
+                        const death = deaths.find(d => parseInt(d.playerNo) === popupPlayerNo);
+                        if (death) {
+                          setDeaths(deaths.map(d => d.id === death.id ? { ...d, reason: val } : d));
+                        }
+                      }}
+                      color="text-red-500"
+                    />
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => {
+                      setDeaths([...deaths, { id: Math.random().toString(), day: currentDay, playerNo: popupPlayerNo.toString(), reason: '🌑', note: '', isConfirmed: true }]);
+                    }}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-[9px] font-black uppercase transition-colors"
+                  >
+                    Mark as Dead
+                  </button>
+                )}
+              </div>
+
+              {/* Player Notepad */}
               <textarea 
                 autoFocus
                 className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
@@ -349,24 +403,9 @@ export default function App() {
                 value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
                 onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
               />
+
+              {/* Role Selector */}
               <div className="flex gap-2">
-                <button 
-                  onClick={() => {
-                    const allRoles = [
-                      ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
-                      ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
-                      ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
-                      ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
-                    ];
-                    if (allRoles.length > 0) {
-                      const randomRole = allRoles[Math.floor(Math.random() * allRoles.length)];
-                      updatePlayerInfo(popupPlayerNo, (players.find(p => p.no === popupPlayerNo)?.inf || '') + (players.find(p => p.no === popupPlayerNo)?.inf ? '\n' : '') + randomRole.role);
-                    }
-                  }}
-                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
-                >
-                  Random Role
-                </button>
                 <button 
                   onClick={() => {
                     const allRoles = [
@@ -381,6 +420,33 @@ export default function App() {
                 >
                   Select Role
                 </button>
+              </div>
+
+              {/* Vote History */}
+              <div className="bg-slate-50 rounded border p-2 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Vote size={12} className="text-blue-500" />
+                  <span className="text-[9px] font-black text-slate-600 uppercase">Vote History</span>
+                </div>
+                {(() => {
+                  const playerStr = popupPlayerNo.toString();
+                  const votedTo = new Set<string>();
+                  const nominatedWho = new Set<string>();
+                  const nominatedBy = new Set<string>();
+                  nominations.forEach(n => {
+                    if (n.voters.includes(playerStr) && n.t && n.t !== '-') votedTo.add(n.t);
+                    if (n.f === playerStr && n.t && n.t !== '-') nominatedWho.add(n.t);
+                    if (n.t === playerStr && n.f && n.f !== '-') nominatedBy.add(n.f);
+                  });
+                  return (
+                    <div className="space-y-1 text-[9px]">
+                      {votedTo.size > 0 && <div><strong>Voted to:</strong> {Array.from(votedTo).join(', ')}</div>}
+                      {nominatedWho.size > 0 && <div><strong>Nominated:</strong> {Array.from(nominatedWho).join(', ')}</div>}
+                      {nominatedBy.size > 0 && <div><strong>Nominated by:</strong> {Array.from(nominatedBy).join(', ')}</div>}
+                      {votedTo.size === 0 && nominatedWho.size === 0 && nominatedBy.size === 0 && <div className="text-slate-400">No vote history.</div>}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -447,26 +513,59 @@ export default function App() {
       {/* ROLE SELECTOR POPUP */}
       {showRoleSelector && (
         <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setShowRoleSelector(null)}>
-          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[320px] max-h-[400px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
+          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[400px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
             <div className="px-3 py-2 bg-blue-600 flex justify-between items-center">
               <span className="text-white font-black text-[10px] uppercase">Select Role for Player {showRoleSelector.playerNo}</span>
               <button onClick={() => setShowRoleSelector(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
             </div>
             <div className="p-3 max-h-[320px] overflow-y-auto">
               {showRoleSelector.roles.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {showRoleSelector.roles.map((item, idx) => (
-                    <button 
-                      key={idx} 
-                      onClick={() => {
-                        updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
-                        setShowRoleSelector(null);
-                      }}
-                      className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left`}
-                    >
-                      {item.role}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="space-y-1">
+                    <h4 className="text-[8px] font-black text-blue-400 uppercase">Townsfolk</h4>
+                    {showRoleSelector.roles.filter(r => r.category === 'Townsfolk').map((item, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => {
+                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
+                          setShowRoleSelector(null);
+                        }}
+                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
+                      >
+                        {item.role}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-[8px] font-black text-blue-200 uppercase">Outsider</h4>
+                    {showRoleSelector.roles.filter(r => r.category === 'Outsider').map((item, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => {
+                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
+                          setShowRoleSelector(null);
+                        }}
+                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
+                      >
+                        {item.role}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-[8px] font-black text-red-400 uppercase">Minions & Demons</h4>
+                    {showRoleSelector.roles.filter(r => r.category === 'Minion' || r.category === 'Demon').map((item, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => {
+                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
+                          setShowRoleSelector(null);
+                        }}
+                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
+                      >
+                        {item.role}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <p className="text-slate-500 text-xs">No roles defined yet.</p>
