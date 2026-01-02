@@ -33,6 +33,7 @@ interface Character {
 }
 
 interface CharDict {
+  Townsfolk: Character[];
   Outsider: Character[];
   Minion: Character[];
   Demon: Character[];
@@ -57,6 +58,7 @@ const REASON_CYCLE = ['⚔️', '☀️', '🌑', '🌗', '🌕'];
 const STATUS_OPTIONS = ["—", "POSS", "CONF", "NOT"];
 
 const createInitialChars = (): CharDict => ({
+  Townsfolk: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
   Outsider: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
   Minion: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
   Demon: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),

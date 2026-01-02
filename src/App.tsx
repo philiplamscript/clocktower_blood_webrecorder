@@ -144,6 +144,7 @@ export default function App() {
     ]);
     setCurrentDay(1);
     setChars(prev => ({
+      Townsfolk: prev.Townsfolk.map(c => ({ ...c, status: '—', note: '' })),
       Outsider: prev.Outsider.map(c => ({ ...c, status: '—', note: '' })),
       Minion: prev.Minion.map(c => ({ ...c, status: '—', note: '' })),
       Demon: prev.Demon.map(c => ({ ...c, status: '—', note: '' })),
@@ -280,7 +281,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {(Object.entries(chars) as any).map(([f, list]: any) => (
                   <div key={f} className="space-y-1">
                     <h3 className="text-[9px] font-black text-slate-400 px-1 uppercase tracking-widest">{f}s</h3>
@@ -323,7 +324,7 @@ export default function App() {
               </div>
               <button onClick={() => setPopupPlayerNo(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
             </div>
-            <div className="p-3">
+            <div className="p-3 space-y-3">
               <textarea 
                 autoFocus
                 className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
@@ -331,6 +332,39 @@ export default function App() {
                 value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
                 onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
               />
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => {
+                    const allRoles = [
+                      ...chars.Townsfolk.map(c => c.name).filter(n => n),
+                      ...chars.Outsider.map(c => c.name).filter(n => n),
+                      ...chars.Minion.map(c => c.name).filter(n => n),
+                      ...chars.Demon.map(c => c.name).filter(n => n)
+                    ].filter(r => r);
+                    if (allRoles.length > 0) {
+                      const randomRole = allRoles[Math.floor(Math.random() * allRoles.length)];
+                      updatePlayerInfo(popupPlayerNo, (players.find(p => p.no === popupPlayerNo)?.inf || '') + (players.find(p => p.no === popupPlayerNo)?.inf ? '\n' : '') + randomRole);
+                    }
+                  }}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
+                >
+                  Random Role
+                </button>
+                <button 
+                  onClick={() => {
+                    const allRoles = [
+                      ...chars.Townsfolk.map(c => c.name).filter(n => n),
+                      ...chars.Outsider.map(c => c.name).filter(n => n),
+                      ...chars.Minion.map(c => c.name).filter(n => n),
+                      ...chars.Demon.map(c => c.name).filter(n => n)
+                    ].filter(r => r);
+                    setShowRoleSelector({ playerNo: popupPlayerNo, roles: allRoles });
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
+                >
+                  Select Role
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -388,6 +422,38 @@ export default function App() {
             <div className="flex gap-2">
               <button onClick={() => setShowReset(false)} className="flex-1 py-2 bg-slate-100 rounded text-[10px] font-bold">CANCEL</button>
               <button onClick={reset} className="flex-1 py-2 bg-red-600 text-white rounded text-[10px] font-black">RESET ALL</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ROLE SELECTOR POPUP */}
+      {showRoleSelector && (
+        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setShowRoleSelector(null)}>
+          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[320px] max-h-[400px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
+            <div className="px-3 py-2 bg-blue-600 flex justify-between items-center">
+              <span className="text-white font-black text-[10px] uppercase">Select Role for Player {showRoleSelector.playerNo}</span>
+              <button onClick={() => setShowRoleSelector(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
+            </div>
+            <div className="p-3 max-h-[320px] overflow-y-auto">
+              {showRoleSelector.roles.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {showRoleSelector.roles.map((role, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => {
+                        updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + role);
+                        setShowRoleSelector(null);
+                      }}
+                      className="bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left"
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-slate-500 text-xs">No roles defined yet.</p>
+              )}
             </div>
           </div>
         </div>
