@@ -143,7 +143,11 @@ export default function App() {
       { id: 'default-night', day: 1, playerNo: '', reason: '🌑', note: '', isConfirmed: true }
     ]);
     setCurrentDay(1);
-    setChars(createInitialChars());
+    setChars(prev => ({
+      Outsider: prev.Outsider.map(c => ({ ...c, status: '—', note: '' })),
+      Minion: prev.Minion.map(c => ({ ...c, status: '—', note: '' })),
+      Demon: prev.Demon.map(c => ({ ...c, status: '—', note: '' })),
+    }));
     setNote('');
     localStorage.clear();
     setShowReset(false);
