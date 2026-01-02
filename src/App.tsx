@@ -42,6 +42,7 @@ import {
 import PlayerGrid from './Components/PlayerGrid/PlayerGrid';
 import VoteLedger from './Components/VoteLedger/VoteLedger';
 import DeathLedger from './Components/DeathLedger/DeathLedger';
+import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
@@ -197,42 +198,33 @@ export default function App() {
           
           {activeTab === 'chars' && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="bg-white rounded border p-3 flex items-center justify-between shadow-sm">
-                  <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Player Count</span>
-                  <div className="flex items-center bg-slate-100 rounded border h-8 overflow-hidden">
-                    <button onClick={() => setPlayerCount(Math.max(1, playerCount - 1))} className="px-3 hover:bg-slate-200 transition-colors"><Minus size={12} /></button>
-                    <div className="w-10 text-center font-black text-xs text-slate-900">{playerCount}</div>
-                    <button onClick={() => setPlayerCount(Math.min(20, playerCount + 1))} className="px-3 hover:bg-slate-200 transition-colors"><Plus size={12} /></button>
-                  </div>
+              <div className="bg-slate-900 rounded border border-slate-800 shadow-2xl overflow-hidden max-w-lg mx-auto">
+                <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800 bg-slate-950">
+                  <Scroll size={12} className="text-yellow-500" />
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Script & Player Distribution</span>
                 </div>
-
-                <div className="bg-slate-900 rounded border p-1 shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-2 px-2 py-1 border-b border-slate-800">
-                    <Scroll size={10} className="text-yellow-500" />
-                    <span className="text-[8px] font-black text-slate-500 uppercase">Script Distribution</span>
+                <div className="grid grid-cols-5 divide-x divide-slate-800">
+                  <div className="flex flex-col items-center py-2 bg-slate-900/50">
+                    <span className="text-[7px] font-black text-slate-500 mb-1">PLAYERS</span>
+                    <RotaryPicker value={playerCount} min={1} max={20} onChange={setPlayerCount} color="text-yellow-500" />
                   </div>
-                  <div className="grid grid-cols-4 divide-x divide-slate-800">
-                    {[
-                      { key: 'townsfolk', label: 'TOWNS', color: 'text-blue-400' },
-                      { key: 'outsiders', label: 'OUTS', color: 'text-blue-200' },
-                      { key: 'minions', label: 'MINIONS', color: 'text-red-400' },
-                      { key: 'demons', label: 'DEMON', color: 'text-red-600' }
-                    ].map(d => (
-                      <div key={d.key} className="flex flex-col items-center py-1">
-                        <span className={`text-[7px] font-black ${d.color}`}>{d.label}</span>
-                        <select 
-                          className="w-full bg-transparent border-none text-center text-[11px] font-black text-white focus:ring-0 p-0 cursor-pointer" 
-                          value={roleDist[d.key as keyof RoleDist]} 
-                          onChange={(e) => setRoleDist({ ...roleDist, [d.key]: parseInt(e.target.value) || 0 })}
-                        >
-                          {Array.from({ length: 21 }, (_, i) => (
-                            <option key={i} value={i} className="bg-slate-900 text-white font-mono">{i}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
+                  {[
+                    { key: 'townsfolk', label: 'TOWNS', color: 'text-blue-400' },
+                    { key: 'outsiders', label: 'OUTS', color: 'text-blue-200' },
+                    { key: 'minions', label: 'MINIONS', color: 'text-red-400' },
+                    { key: 'demons', label: 'DEMON', color: 'text-red-600' }
+                  ].map(d => (
+                    <div key={d.key} className="flex flex-col items-center py-2">
+                      <span className={`text-[7px] font-black ${d.color} mb-1`}>{d.label}</span>
+                      <RotaryPicker 
+                        value={roleDist[d.key as keyof RoleDist]} 
+                        min={0} 
+                        max={20} 
+                        onChange={(val) => setRoleDist({ ...roleDist, [d.key]: val })} 
+                        color={d.color}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
