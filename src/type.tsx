@@ -28,7 +28,7 @@ interface Death {
 
 interface Character {
   name: string;
-  status: '0' | '1' | '2';
+  status: string; // "—" | "POSS" | "CONF" | "NOT"
   note: string;
 }
 
@@ -54,11 +54,12 @@ interface SortConfig {
 
 const INITIAL_PLAYERS = 18;
 const REASON_CYCLE = ['⚔️', '☀️', '🌑', '🌗', '🌕'];
+const STATUS_OPTIONS = ["—", "POSS", "CONF", "NOT"];
 
 const createInitialChars = (): CharDict => ({
-  Outsider: Array(8).fill(null).map(() => ({ name: '', status: '0', note: '' })),
-  Minion: Array(8).fill(null).map(() => ({ name: '', status: '0', note: '' })),
-  Demon: Array(8).fill(null).map(() => ({ name: '', status: '0', note: '' })),
+  Outsider: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
+  Minion: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
+  Demon: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
 });
 
 export {
@@ -72,5 +73,6 @@ export {
   
   INITIAL_PLAYERS,
   REASON_CYCLE,
+  STATUS_OPTIONS,
   createInitialChars,
 };

@@ -35,6 +35,7 @@ import {
   
   INITIAL_PLAYERS,
   REASON_CYCLE,
+  STATUS_OPTIONS,
   createInitialChars,
 } from './type'
 
@@ -43,6 +44,7 @@ import PlayerGrid from './Components/PlayerGrid/PlayerGrid';
 import VoteLedger from './Components/VoteLedger/VoteLedger';
 import DeathLedger from './Components/DeathLedger/DeathLedger';
 import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
+import TextRotaryPicker from './Components/RotaryPicker/TextRotaryPicker';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
@@ -52,7 +54,7 @@ export default function App() {
   const [nominations, setNominations] = useState<Nomination[]>([{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]);
   const [deaths, setDeaths] = useState<Death[]>([]);
   const [chars, setChars] = useState<CharDict>(createInitialChars());
-  const [roleDist, setRoleDist] = useState<RoleDist>({ townsfolk: 0, outsiders: 0, minions: 0, demons: 0 });
+  const [roleDist, setRoleDist] = useState<RoleDist>({ townsfolk: 0, outsiders: 0, minions: 0, demons: 1 });
   const [note, setNote] = useState('');
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
@@ -236,9 +238,13 @@ export default function App() {
                       {list.map((c: Character, i: number) => (
                         <div key={i} className="flex border-b last:border-0 h-8 items-center px-2 gap-2">
                           <input className="flex-1 bg-transparent border-none p-0 text-[10px] focus:ring-0 font-bold" placeholder="..." value={c.name} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, name: e.target.value } : item) })} />
-                          <select className="w-8 bg-slate-50 rounded border-none p-0 text-[10px] text-center" value={c.status} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, status: e.target.value as any } : item) })}>
-                            <option>0</option><option>1</option><option>2</option>
-                          </select>
+                          <div className="w-12 bg-slate-50 rounded border-l border-slate-100 h-full">
+                            <TextRotaryPicker 
+                              value={c.status} 
+                              options={STATUS_OPTIONS} 
+                              onChange={(val) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, status: val } : item) })}
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
