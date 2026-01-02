@@ -25,9 +25,9 @@ import {
 
 import {
   type Nomination,
-} from '../../type'
+} from '../../../../type'
 
-import {ClockPicker} from '../ClockPicker/ClockPicker';
+import {ClockPicker} from '../../ClockPicker/ClockPicker';
 
 // --- COMPONENT 3: VOTE LEDGER ---
 
