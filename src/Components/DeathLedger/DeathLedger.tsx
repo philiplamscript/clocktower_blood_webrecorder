@@ -39,7 +39,7 @@ import { ReasonPicker, ClockPicker} from '../ClockPicker/ClockPicker';
 
 // --- COMPONENT 4: DEATH LEDGER ---
 
-const DeathLedger = ({ deaths, setDeaths, setPlayers, deadPlayers }: any) => {
+const DeathLedger = ({ deaths, setDeaths, setPlayers, deadPlayers, playerCount }: any) => {
   const sync = () => {
     setPlayers((prev: Player[]) => {
       let next = [...prev];
@@ -72,7 +72,7 @@ const DeathLedger = ({ deaths, setDeaths, setPlayers, deadPlayers }: any) => {
           {deaths.map((d: Death) => (
             <tr key={d.id} className={`h-12 ${d.isConfirmed ? 'bg-green-50/20' : ''}`}>
               <td className="p-0 border-r border-slate-100"><input type="number" className="w-full text-center border-none bg-transparent focus:ring-0 text-[11px] font-black" value={d.day} onChange={(e) => setDeaths(deaths.map((it: any) => it.id === d.id ? { ...it, day: parseInt(e.target.value) || 1, isConfirmed: false } : it))} /></td>
-              <td className="p-2 border-r border-slate-100"><ClockPicker label="DEAD" value={d.playerNo} deadPlayers={deadPlayers} onChange={(val) => setDeaths(deaths.map((it: any) => it.id === d.id ? { ...it, playerNo: val, isConfirmed: false } : it))} /></td>
+              <td className="p-2 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="DEAD" value={d.playerNo} deadPlayers={deadPlayers} onChange={(val) => setDeaths(deaths.map((it: any) => it.id === d.id ? { ...it, playerNo: val, isConfirmed: false } : it))} /></td>
               <td className="p-0 border-r border-slate-100 text-center">
                 <ReasonPicker value={d.reason} onChange={(val) => setDeaths(deaths.map((it: any) => it.id === d.id ? { ...it, reason: val, isConfirmed: false } : it))} />
               </td>

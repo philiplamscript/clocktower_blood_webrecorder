@@ -40,7 +40,8 @@ const VoteLedger = ({
   setDragAction,
   lastDraggedPlayer,
   setLastDraggedPlayer,
-  deadPlayers
+  deadPlayers,
+  playerCount = 15
 }: any) => {
   const toggleVoter = (nominationId: string, playerNo: number, forceAction?: 'add' | 'remove') => {
     setNominations(nominations.map((n: Nomination) => {
@@ -66,7 +67,7 @@ const VoteLedger = ({
             <th className="w-10 py-2 border-r text-center">VCT</th>
             <th className="p-0">
               <div className="flex h-full">
-                {Array.from({ length: 18 }, (_, i) => i + 1).map(num => (
+                {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => (
                   <div key={num} className="flex-1 border-r text-[7px] text-center py-2 text-slate-400">{num}</div>
                 ))}
               </div>
@@ -82,17 +83,17 @@ const VoteLedger = ({
               
               {/* Combined Gesture Pickers for For/Target */}
               <td className="p-1 border-r border-slate-100">
-                <ClockPicker label="FOR" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+                <ClockPicker playerCount={playerCount} label="FOR" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
               </td>
               <td className="p-1 border-r border-slate-100">
-                <ClockPicker label="TARGET" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+                <ClockPicker playerCount={playerCount} label="TARGET" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
               </td>
               
-              <td className="p-1 border-r border-slate-100"><ClockPicker label="VOTES" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
+              <td className="p-1 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="VOTES" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
               <td className="p-0 border-r border-slate-100 text-center text-[10px] font-black">{n.voters.split(',').filter(v => v !== "").length}</td>
               <td className="p-0">
                 <div className="flex h-10">
-                  {Array.from({ length: 18 }, (_, i) => i + 1).map((num) => {
+                  {Array.from({ length: playerCount }, (_, i) => i + 1).map((num) => {
                     const isActive = n.voters.split(',').includes(num.toString());
                     const isFor = n.f === num.toString();
                     const isTarget = n.t === num.toString();

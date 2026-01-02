@@ -50,13 +50,32 @@ import DeathLedger from './Components/DeathLedger/DeathLedger';
 export default function App() {
   const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
   const [currentDay, setCurrentDay] = useState(1);
-  const [players, setPlayers] = useState<Player[]>(Array.from({ length: INITIAL_PLAYERS }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
+  const [playerCount, setPlayerCount] = useState(15);
+  const [players, setPlayers] = useState<Player[]>(Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
   const [nominations, setNominations] = useState<Nomination[]>([{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]);
   const [deaths, setDeaths] = useState<Death[]>([]);
   const [chars, setChars] = useState<CharDict>(createInitialChars());
   const [note, setNote] = useState('');
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
+
+  // Sync players array when playerCount changes
+  useEffect(() => {
+    setPlayers(prev => {
+      if (prev.length === playerCount) return prev;
+      if (prev.length < playerCount) {
+        const extra = Array.from({ length: playerCount - prev.length }, (_, i) => ({
+          no: prev.length + i + 1,
+          inf: '',
+          day: '',
+          reason: '',
+          red: ''
+        }));
+        return [...prev, ...extra];
+      }
+      return prev.slice(0, playerCount);
+    });
+  }, [playerCount]);
 
   // Global Drag State for Votes
   const [isDragging, setIsDragging] = useState(false);
@@ -69,7 +88,7 @@ export default function App() {
   }, [players]);
 
   const reset = () => {
-    setPlayers(Array.from({ length: INITIAL_PLAYERS }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
+    setPlayers(Array.from({ length: playerCount }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
     setNominations([{ id: Math.random().toString(36), day: 1, f: '-', t: '-', voters: '', note: '' }]);
     setDeaths([]);
     setCurrentDay(1);
@@ -115,7 +134,7 @@ export default function App() {
 
         <div className="flex-none w-px h-4 bg-slate-700" />
 
-        {Array.from({ length: 18 }, (_, i) => i + 1).map(num => {
+        {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
           const isDead = deadPlayers.includes(num);
           const hasInfo = players.find(p => p.no === num)?.inf !== '';
           return (
@@ -185,28 +204,40 @@ export default function App() {
               dragAction={dragAction} setDragAction={setDragAction}
               lastDraggedPlayer={lastDraggedPlayer} setLastDraggedPlayer={setLastDraggedPlayer}
               deadPlayers={deadPlayers}
+              playerCount={playerCount}
             />
           )}
 
-          {activeTab === 'deaths' && <DeathLedger deaths={deaths} setDeaths={setDeaths} setPlayers={setPlayers} deadPlayers={deadPlayers} />}
+          {activeTab === 'deaths' && <DeathLedger deaths={deaths} setDeaths={setDeaths} setPlayers={setPlayers} deadPlayers={deadPlayers} playerCount={playerCount} />}
           
           {activeTab === 'chars' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {(Object.entries(chars) as any).map(([f, list]: any) => (
-                <div key={f} className="space-y-1">
-                  <h3 className="text-[9px] font-black text-slate-400 px-1 uppercase tracking-widest">{f}s</h3>
-                  <div className="bg-white rounded border overflow-hidden">
-                    {list.map((c: Character, i: number) => (
-                      <div key={i} className="flex border-b last:border-0 h-8 items-center px-2 gap-2">
-                        <input className="flex-1 bg-transparent border-none p-0 text-[10px] focus:ring-0 font-bold" placeholder="..." value={c.name} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, name: e.target.value } : item) })} />
-                        <select className="w-8 bg-slate-50 rounded border-none p-0 text-[10px] text-center" value={c.status} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, status: e.target.value as any } : item) })}>
-                          <option>0</option><option>1</option><option>2</option>
-                        </select>
-                      </div>
-                    ))}
-                  </div>
+            <div className="space-y-4">
+              <div className="bg-white rounded border p-3 flex items-center justify-between shadow-sm">
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Player Count (1-20)</span>
+                <div className="flex items-center bg-slate-100 rounded border h-8 overflow-hidden">
+                  <button onClick={() => setPlayerCount(Math.max(1, playerCount - 1))} className="px-3 hover:bg-slate-200 transition-colors"><Minus size={12} /></button>
+                  <div className="w-10 text-center font-black text-xs text-slate-900">{playerCount}</div>
+                  <button onClick={() => setPlayerCount(Math.min(20, playerCount + 1))} className="px-3 hover:bg-slate-200 transition-colors"><Plus size={12} /></button>
                 </div>
-              ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {(Object.entries(chars) as any).map(([f, list]: any) => (
+                  <div key={f} className="space-y-1">
+                    <h3 className="text-[9px] font-black text-slate-400 px-1 uppercase tracking-widest">{f}s</h3>
+                    <div className="bg-white rounded border overflow-hidden">
+                      {list.map((c: Character, i: number) => (
+                        <div key={i} className="flex border-b last:border-0 h-8 items-center px-2 gap-2">
+                          <input className="flex-1 bg-transparent border-none p-0 text-[10px] focus:ring-0 font-bold" placeholder="..." value={c.name} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, name: e.target.value } : item) })} />
+                          <select className="w-8 bg-slate-50 rounded border-none p-0 text-[10px] text-center" value={c.status} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, status: e.target.value as any } : item) })}>
+                            <option>0</option><option>1</option><option>2</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -246,9 +277,9 @@ export default function App() {
       </div>
 
       <div className="bg-white border-t px-3 py-1 text-[9px] font-bold text-slate-400 flex justify-between items-center">
-        <span>PLAYERS REGISTERED: {players.filter(p => p.inf).length} / 18</span>
+        <span>PLAYERS REGISTERED: {players.filter(p => p.inf).length} / {playerCount}</span>
         <div className="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-red-500" style={{ width: `${(players.filter(p => p.inf).length / 18) * 100}%` }} />
+          <div className="h-full bg-red-500" style={{ width: `${(players.filter(p => p.inf).length / playerCount) * 100}%` }} />
         </div>
       </div>
 

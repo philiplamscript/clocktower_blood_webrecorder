@@ -1,4 +1,3 @@
-// import { Player } from '../../type'
 import  { useState,  useRef, useEffect, useCallback } from 'react';
 
 
@@ -44,7 +43,8 @@ const ClockPicker = ({
   forValue = "",
   targetValue = "",
   deadPlayers = [],
-  onSetBoth
+  onSetBoth,
+  playerCount = 15
 }: { 
   value: string, 
   onChange: (val: string) => void, 
@@ -53,7 +53,8 @@ const ClockPicker = ({
   forValue?: string,
   targetValue?: string,
   deadPlayers?: number[],
-  onSetBoth?: (f: string, t: string) => void
+  onSetBoth?: (f: string, t: string) => void,
+  playerCount?: number
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, popLeft: false });
@@ -123,7 +124,7 @@ const ClockPicker = ({
     setGestureCurrent(null);
   };
 
-  const players = Array.from({ length: 18 }, (_, i) => i + 1);
+  const players = Array.from({ length: playerCount }, (_, i) => i + 1);
   const activeVoters = isMulti ? value.split(',').filter(v => v !== "") : [value];
 
   return (
@@ -167,8 +168,8 @@ const ClockPicker = ({
                 else if (isFor) fill = '#3b82f6';
                 else if (isTarget) fill = '#10b981';
 
-                const path = getSlicePath(i, 18, 50, 142);
-                const angle = (i * (360/18)) - 90 + (360/36);
+                const path = getSlicePath(i, playerCount, 50, 142);
+                const angle = (i * (360/playerCount)) - 90 + (360/(playerCount * 2));
                 const lx = 144 + 95 * Math.cos(angle * Math.PI / 180);
                 const ly = 144 + 95 * Math.sin(angle * Math.PI / 180);
 
