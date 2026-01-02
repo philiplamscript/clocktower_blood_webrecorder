@@ -44,18 +44,17 @@ import {
 } from './type'
 
 
-import PlayerGrid from './Components/PlayerGrid/PlayerGrid';
-import VoteLedger from './Components/VoteLedger/VoteLedger';
-import DeathLedger from './Components/DeathLedger/DeathLedger';
-import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
-import TextRotaryPicker from './Components/RotaryPicker/TextRotaryPicker';
-import {ClockPicker} from './Components/ClockPicker/ClockPicker';
+import PlayersTab from './components/tabs/PlayersTab';
+import VotesTab from './components/tabs/VotesTab';
+import DeathsTab from './components/tabs/DeathsTab';
+import CharsTab from './components/tabs/CharsTab';
+import NotesTab from './components/tabs/NotesTab';
 
-import PlayerInfoPopup from './components/Popups/PlayerInfoPopup';
-import RoleSelectorPopup from './components/Popups/RoleSelectorPopup';
-import RoleUpdatePopup from './components/Popups/RoleUpdatePopup';
-import ResetConfirmation from './components/Popups/ResetConfirmation';
-import FAB from './components/FAB';
+import PlayerInfoPopup from './components/ui/popups/PlayerInfoPopup';
+import RoleSelectorPopup from './components/ui/popups/RoleSelectorPopup';
+import RoleUpdatePopup from './components/ui/popups/RoleUpdatePopup';
+import ResetConfirmation from './components/ui/popups/ResetConfirmation';
+import FAB from './components/ui/FAB';
 
 export default function App() {
   // Persistence Helper
@@ -296,87 +295,11 @@ export default function App() {
 
       <main className="flex-1 overflow-y-auto p-3 no-scrollbar relative">
         <div className="max-w-4xl mx-auto space-y-3 pb-24">
-          {(activeTab === 'votes' || activeTab === 'deaths') && (
-            <div className="flex justify-end items-center gap-3">
-              <button onClick={activeTab === 'votes' ? addNomination : addDeath} className={`${activeTab === 'votes' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700'} text-white px-4 h-8 rounded text-[9px] font-black uppercase flex items-center gap-2 shadow-sm transition-all active:scale-95`}>
-                <Plus size={12} /> {activeTab === 'votes' ? 'New Nomination' : 'Log Death'}
-              </button>
-            </div>
-          )}
-
-          {activeTab === 'players' && (
-            <div id="player-grid-container">
-              <PlayerGrid players={players} setPlayers={setPlayers} />
-            </div>
-          )}
-          
-          {activeTab === 'votes' && (
-            <VoteLedger nominations={nominations} setNominations={setNominations} isDragging={isDragging} setIsDragging={setIsDragging} dragAction={dragAction} setDragAction={setDragAction} lastDraggedPlayer={lastDraggedPlayer} setLastDraggedPlayer={setLastDraggedPlayer} deadPlayers={deadPlayers} playerCount={playerCount} />
-          )}
-
-          {activeTab === 'deaths' && <DeathLedger deaths={deaths} setDeaths={setDeaths} deadPlayers={deadPlayers} playerCount={playerCount} />}
-          
-          {activeTab === 'chars' && (
-            <div className="space-y-4">
-              <div className="bg-slate-900 rounded border border-slate-800 shadow-2xl overflow-hidden max-w-lg mx-auto">
-                <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800 bg-slate-950">
-                  <Scroll size={12} className="text-yellow-500" />
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Script & Player Distribution</span>
-                </div>
-                <div className="grid grid-cols-5 divide-x divide-slate-800">
-                  <div className="flex flex-col items-center py-2 bg-slate-900/50">
-                    <span className="text-[7px] font-black text-slate-500 mb-1">PLAYERS</span>
-                    <RotaryPicker value={playerCount} min={1} max={20} onChange={setPlayerCount} color="text-yellow-500" />
-                  </div>
-                  {[
-                    { key: 'townsfolk', label: 'TOWNS', color: 'text-blue-400' },
-                    { key: 'outsiders', label: 'OUTS', color: 'text-blue-200' },
-                    { key: 'minions', label: 'MINIONS', color: 'text-red-400' },
-                    { key: 'demons', label: 'DEMON', color: 'text-red-600' }
-                  ].map(d => (
-                    <div key={d.key} className="flex flex-col items-center py-2">
-                      <span className={`text-[7px] font-black ${d.color} mb-1`}>{d.label}</span>
-                      <RotaryPicker 
-                        value={roleDist[d.key as keyof RoleDist]} 
-                        min={0} 
-                        max={20} 
-                        onChange={(val) => setRoleDist({ ...roleDist, [d.key]: val })} 
-                        color={d.color}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                {(Object.entries(chars) as any).map(([f, list]: any) => (
-                  <div key={f} className="space-y-1">
-                    <h3 className="text-[9px] font-black text-slate-400 px-1 uppercase tracking-widest">{f}s</h3>
-                    <div className="bg-white rounded border overflow-hidden">
-                      {list.map((c: Character, i: number) => (
-                        <div key={i} className="flex border-b last:border-0 h-8 items-center px-2 gap-2">
-                          <input className="flex-1 bg-transparent border-none p-0 text-[10px] focus:ring-0 font-bold" placeholder="..." value={c.name} onChange={(e) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, name: e.target.value } : item) })} />
-                          <div className="w-12 bg-slate-50 rounded border-l border-slate-100 h-full">
-                            <TextRotaryPicker 
-                              value={c.status} 
-                              options={STATUS_OPTIONS} 
-                              onChange={(val) => setChars({ ...chars, [f]: chars[f as keyof CharDict].map((item, idx) => idx === i ? { ...item, status: val } : item) })}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'notes' && (
-            <div className="bg-white rounded border p-4 shadow-sm min-h-[400px]">
-              <textarea className="w-full h-full border-none focus:ring-0 text-xs font-mono italic leading-relaxed min-h-[400px]" placeholder="Type social reads here..." value={note} onChange={(e) => setNote(e.target.value)} />
-            </div>
-          )}
+          {activeTab === 'players' && <PlayersTab players={players} setPlayers={setPlayers} />}
+          {activeTab === 'votes' && <VotesTab nominations={nominations} setNominations={setNominations} isDragging={isDragging} setIsDragging={setIsDragging} dragAction={dragAction} setDragAction={setDragAction} lastDraggedPlayer={lastDraggedPlayer} setLastDraggedPlayer={setLastDraggedPlayer} deadPlayers={deadPlayers} playerCount={playerCount} addNomination={addNomination} />}
+          {activeTab === 'deaths' && <DeathsTab deaths={deaths} setDeaths={setDeaths} deadPlayers={deadPlayers} playerCount={playerCount} addDeath={addDeath} />}
+          {activeTab === 'chars' && <CharsTab chars={chars} setChars={setChars} playerCount={playerCount} setPlayerCount={setPlayerCount} roleDist={roleDist} setRoleDist={setRoleDist} />}
+          {activeTab === 'notes' && <NotesTab note={note} setNote={setNote} />}
         </div>
       </main>
 
