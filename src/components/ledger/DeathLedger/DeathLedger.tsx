@@ -9,7 +9,7 @@ import {
 
 import {
   type Death,
-} from '../../../../type'
+} from '../../../type'
 
 import { ReasonPicker, ClockPicker} from '../../pickers/ClockPicker/ClockPicker';
 

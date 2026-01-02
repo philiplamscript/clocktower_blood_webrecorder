@@ -11,7 +11,7 @@ import {
 
 import {type Player,
   type SortConfig,
-} from '../../../../type'
+} from '../../../type'
 
 // --- COMPONENT 2: PLAYER DATA GRID ---
 

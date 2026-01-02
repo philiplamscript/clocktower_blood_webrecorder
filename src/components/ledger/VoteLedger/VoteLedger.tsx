@@ -25,7 +25,7 @@ import {
 
 import {
   type Nomination,
-} from '../../../../type'
+} from '../../../type'
 
 import {ClockPicker} from '../../pickers/ClockPicker/ClockPicker';
 
