@@ -48,19 +48,49 @@ import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
 import TextRotaryPicker from './Components/RotaryPicker/TextRotaryPicker';
 
 export default function App() {
+  // Persistence Helper
+  const getStorage = (key: string, fallback: any) => {
+    const saved = localStorage.getItem(`clocktower_${key}`);
+    return saved ? JSON.parse(saved) : fallback;
+  };
+
   const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
-  const [currentDay, setCurrentDay] = useState(1);
-  const [playerCount, setPlayerCount] = useState(15);
-  const [players, setPlayers] = useState<Player[]>(Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
-  const [nominations, setNominations] = useState<Nomination[]>([{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]);
-  const [deaths, setDeaths] = useState<Death[]>([]);
-  const [chars, setChars] = useState<CharDict>(createInitialChars());
-  const [roleDist, setRoleDist] = useState<RoleDist>({ townsfolk: 0, outsiders: 0, minions: 0, demons: 1 });
-  const [note, setNote] = useState('');
+  const [currentDay, setCurrentDay] = useState(() => getStorage('day', 1));
+  const [playerCount, setPlayerCount] = useState(() => getStorage('count', 15));
+  const [players, setPlayers] = useState<Player[]>(() => getStorage('players', Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' }))));
+  const [nominations, setNominations] = useState<Nomination[]>(() => getStorage('nominations', [{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]));
+  const [deaths, setDeaths] = useState<Death[]>(() => getStorage('deaths', []));
+  const [chars, setChars] = useState<CharDict>(() => getStorage('chars', createInitialChars()));
+  const [roleDist, setRoleDist] = useState<RoleDist>(() => getStorage('dist', { townsfolk: 0, outsiders: 0, minions: 0, demons: 1 }));
+  const [note, setNote] = useState(() => getStorage('note', ''));
+  const [fontSize, setFontSize] = useState<'small' | 'mid' | 'large'>(() => getStorage('font', 'mid'));
+  
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
-  const [fontSize, setFontSize] = useState<'small' | 'mid' | 'large'>('mid');
+
+  // Auto-Save Effect
+  useEffect(() => {
+    localStorage.setItem('clocktower_day', JSON.stringify(currentDay));
+    localStorage.setItem('clocktower_count', JSON.stringify(playerCount));
+    localStorage.setItem('clocktower_players', JSON.stringify(players));
+    localStorage.setItem('clocktower_nominations', JSON.stringify(nominations));
+    localStorage.setItem('clocktower_deaths', JSON.stringify(deaths));
+    localStorage.setItem('clocktower_chars', JSON.stringify(chars));
+    localStorage.setItem('clocktower_dist', JSON.stringify(roleDist));
+    localStorage.setItem('clocktower_note', JSON.stringify(note));
+    localStorage.setItem('clocktower_font', JSON.stringify(fontSize));
+  }, [currentDay, playerCount, players, nominations, deaths, chars, roleDist, note, fontSize]);
+
+  // Reload Warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const fontSizeClass = {
     small: 'text-[10px]',
@@ -107,6 +137,7 @@ export default function App() {
     setCurrentDay(1);
     setChars(createInitialChars());
     setNote('');
+    localStorage.clear();
     setShowReset(false);
   };
 
