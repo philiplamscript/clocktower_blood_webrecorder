@@ -55,6 +55,7 @@ export default function App() {
   const [note, setNote] = useState('');
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
+  const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
 
   useEffect(() => {
     setPlayers(prev => {
@@ -76,8 +77,6 @@ export default function App() {
       if (death) {
         return { ...p, day: death.day.toString(), reason: death.reason };
       }
-      // If no death in ledger but player has death info, only clear if it matches a previously known death player
-      // (This avoids clearing manually entered data in Player Grid unless a Death entry was removed)
       return p;
     }));
   }, [deaths]);
@@ -113,6 +112,10 @@ export default function App() {
     setFabOpen(false);
   };
 
+  const updatePlayerInfo = (no: number, text: string) => {
+    setPlayers(prev => prev.map(p => p.no === no ? { ...p, inf: text } : p));
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-100 flex flex-col font-sans text-xs select-none" onMouseUp={() => setIsDragging(false)}>
       
@@ -134,7 +137,7 @@ export default function App() {
           const isDead = deadPlayers.includes(num);
           const hasInfo = players.find(p => p.no === num)?.inf !== '';
           return (
-            <button key={num} onClick={() => { const target = document.querySelector(`#player-row-${num}`); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' }); setActiveTab('players'); }}
+            <button key={num} onClick={() => setPopupPlayerNo(num)}
               className={`flex-none w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 ${isDead ? 'bg-slate-900 text-slate-500 border-red-900/50' : hasInfo ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-700 text-slate-300 border-slate-600'} active:scale-90`}>
               {isDead ? <Skull size={10} /> : num}
             </button>
@@ -168,7 +171,6 @@ export default function App() {
 
           {activeTab === 'players' && (
             <div id="player-grid-container">
-              {players.map(p => <div key={p.no} id={`player-row-${p.no}`} className="scroll-mt-32" />)}
               <PlayerGrid players={players} setPlayers={setPlayers} />
             </div>
           )}
@@ -244,6 +246,30 @@ export default function App() {
           )}
         </div>
       </main>
+
+      {/* QUICK PLAYER INFO POPUP */}
+      {popupPlayerNo !== null && (
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setPopupPlayerNo(null)}>
+          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[280px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
+            <div className={`px-3 py-2 flex justify-between items-center ${deadPlayers.includes(popupPlayerNo) ? 'bg-slate-900' : 'bg-blue-600'}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-white font-black text-[10px] uppercase">Player {popupPlayerNo}</span>
+                {deadPlayers.includes(popupPlayerNo) && <Skull size={10} className="text-red-500" />}
+              </div>
+              <button onClick={() => setPopupPlayerNo(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
+            </div>
+            <div className="p-3">
+              <textarea 
+                autoFocus
+                className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
+                placeholder="Enter player info/role/reads..."
+                value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
+                onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-[10000]">
         {fabOpen && (
