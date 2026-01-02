@@ -21,7 +21,8 @@ import {
   ChevronDown,
   X,
   Download,
-  Scroll
+  Scroll,
+  Type
 } from 'lucide-react';
 
 
@@ -59,6 +60,13 @@ export default function App() {
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
+  const [fontSize, setFontSize] = useState<'small' | 'mid' | 'large'>('mid');
+
+  const fontSizeClass = {
+    small: 'text-[10px]',
+    mid: 'text-xs',
+    large: 'text-sm'
+  }[fontSize];
 
   useEffect(() => {
     setPlayers(prev => {
@@ -98,7 +106,6 @@ export default function App() {
     setDeaths([]);
     setCurrentDay(1);
     setChars(createInitialChars());
-    // Role distribution is NOT reset as requested
     setNote('');
     setShowReset(false);
   };
@@ -120,7 +127,7 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-100 flex flex-col font-sans text-xs select-none" onMouseUp={() => setIsDragging(false)}>
+    <div className={`fixed inset-0 bg-slate-100 flex flex-col font-sans select-none ${fontSizeClass}`} onMouseUp={() => setIsDragging(false)}>
       
       <header className="flex-none bg-slate-900 text-white px-3 py-2 flex justify-between items-center shadow-md z-50">
         <div className="flex items-center gap-1.5"><ShieldAlert className="text-red-500" size={14} /><h1 className="font-black text-xs uppercase italic tracking-tighter">LEDGER PRO v3.7</h1></div>
@@ -289,6 +296,20 @@ export default function App() {
       <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-[10000]">
         {fabOpen && (
           <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-5 fade-in duration-200">
+            {/* Font Size Selector */}
+            <div className="bg-white text-slate-900 border border-slate-200 px-2 py-2 rounded-full shadow-2xl flex items-center gap-1">
+              <Type size={14} className="mx-2 text-slate-400" />
+              {(['small', 'mid', 'large'] as const).map(size => (
+                <button 
+                  key={size}
+                  onClick={() => setFontSize(size)}
+                  className={`px-3 py-1 rounded-full text-[8px] font-black uppercase transition-all ${fontSize === size ? 'bg-slate-900 text-white' : 'hover:bg-slate-100 text-slate-400'}`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+            
             <button onClick={() => { setShowReset(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
               <RefreshCcw size={14} className="text-red-500" /> Reset Ledger
             </button>

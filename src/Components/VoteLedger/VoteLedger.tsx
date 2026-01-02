@@ -60,11 +60,11 @@ const VoteLedger = ({
       <table className="w-full border-collapse table-fixed min-w-[900px]">
         <thead>
           <tr className="bg-slate-100 border-b text-[8px] uppercase text-slate-500 font-black">
-            <th className="w-7 py-2 border-r text-center">D</th>
-            <th className="w-9 py-2 border-r text-center text-slate-400"><Megaphone size={12} className="mx-auto" /></th>
-            <th className="w-9 py-2 border-r text-center text-slate-400"><Target size={12} className="mx-auto" /></th>
-            <th className="w-12 py-2 border-r text-center text-slate-400"><Hand size={12} className="mx-auto" /></th>
-            <th className="w-10 py-2 border-r text-center">VCT</th>
+            <th className="w-6 py-2 border-r text-center">D</th>
+            <th className="w-8 py-2 border-r text-center text-slate-400"><Megaphone size={12} className="mx-auto" /></th>
+            <th className="w-8 py-2 border-r text-center text-slate-400"><Target size={12} className="mx-auto" /></th>
+            <th className="w-10 py-2 border-r text-center text-slate-400"><Hand size={12} className="mx-auto" /></th>
+            <th className="w-8 py-2 border-r text-center">VCT</th>
             <th className="p-0">
               <div className="flex h-full">
                 {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => (
@@ -73,7 +73,7 @@ const VoteLedger = ({
               </div>
             </th>
             <th className="w-24 py-2 px-2">NOTES</th>
-            <th className="w-7 py-2"></th>
+            <th className="w-6 py-2"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100 font-mono">
@@ -82,14 +82,14 @@ const VoteLedger = ({
               <td className="p-0 border-r border-slate-100"><input type="number" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.day} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, day: parseInt(e.target.value) || 1 } : item))} /></td>
               
               {/* Combined Gesture Pickers for For/Target */}
-              <td className="p-1 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="FOR" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+              <td className="p-0.5 border-r border-slate-100">
+                <ClockPicker playerCount={playerCount} label="F" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
               </td>
-              <td className="p-1 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="TARGET" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+              <td className="p-0.5 border-r border-slate-100">
+                <ClockPicker playerCount={playerCount} label="T" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
               </td>
               
-              <td className="p-1 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="VOTES" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
+              <td className="p-0.5 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="V" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
               <td className="p-0 border-r border-slate-100 text-center text-[10px] font-black">{n.voters.split(',').filter(v => v !== "").length}</td>
               <td className="p-0">
                 <div className="flex h-10">

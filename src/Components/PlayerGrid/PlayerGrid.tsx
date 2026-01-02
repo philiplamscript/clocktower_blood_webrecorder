@@ -58,22 +58,28 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
     setPlayers(prev => prev.map(p => p.no === no ? { ...p, [field]: value } : p));
   };
 
+  // Helper for auto-expanding textareas
+  const adjustHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.target.style.height = 'inherit';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
   return (
     <div className="bg-white rounded border shadow-sm overflow-hidden">
       <table className="w-full text-left border-collapse table-fixed">
         <thead className="bg-slate-50 border-b text-[8px] uppercase text-slate-400 font-black">
           <tr>
-            <th className="px-2 py-1.5 w-10 text-center cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('no')}>
+            <th className="px-1 py-1.5 w-7 text-center cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('no')}>
               <div className="flex items-center justify-center"># <SortIcon column="no" /></div>
             </th>
-            <th className="px-1 py-1.5 w-10 text-center border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('day')}>
+            <th className="px-1 py-1.5 w-8 text-center border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('day')}>
               <div className="flex flex-col items-center"><Calendar size={10} /><SortIcon column="day" /></div>
             </th>
-            <th className="px-1 py-1.5 w-10 text-center border-l"><Zap size={10} className="mx-auto" /></th>
+            <th className="px-1 py-1.5 w-8 text-center border-l"><Zap size={10} className="mx-auto" /></th>
             <th className="px-3 py-1.5 border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('inf')}>
-              <div className="flex items-center">NAME/INFO <SortIcon column="inf" /></div>
+              <div className="flex items-center">INFO <SortIcon column="inf" /></div>
             </th>
-            <th className="px-1 py-1.5 w-10 text-center text-red-500 border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('red')}>
+            <th className="px-1 py-1.5 w-8 text-center text-red-500 border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('red')}>
               <div className="flex flex-col items-center"><Skull size={10} /><SortIcon column="red" /></div>
             </th>
           </tr>
@@ -81,11 +87,23 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
         <tbody className="divide-y divide-slate-100">
           {sortedPlayers.map((p) => (
             <tr key={p.no} className="align-top hover:bg-slate-50/50">
-              <td className="px-2 py-2 text-center text-slate-300 font-mono text-[10px]">{p.no}</td>
-              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-2 text-xs font-mono focus:ring-0" value={p.day} onChange={(e) => updatePlayer(p.no, 'day', e.target.value)} /></td>
-              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-2 text-xs font-mono focus:ring-0" value={p.reason} onChange={(e) => updatePlayer(p.no, 'reason', e.target.value)} /></td>
-              <td className="px-1 py-1 border-l border-slate-50"><textarea className="w-full bg-transparent border-none p-1 text-xs leading-tight resize-none min-h-[1.5rem] focus:ring-0" rows={1} value={p.inf} placeholder="..." onChange={(e) => updatePlayer(p.no, 'inf', e.target.value)} /></td>
-              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-2 text-xs font-black text-red-600 focus:ring-0" value={p.red} onChange={(e) => updatePlayer(p.no, 'red', e.target.value)} /></td>
+              <td className="px-1 py-2 text-center text-slate-300 font-mono text-[10px]">{p.no}</td>
+              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-mono focus:ring-0" value={p.day} onChange={(e) => updatePlayer(p.no, 'day', e.target.value)} /></td>
+              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-mono focus:ring-0" value={p.reason} onChange={(e) => updatePlayer(p.no, 'reason', e.target.value)} /></td>
+              <td className="px-1 py-1 border-l border-slate-50">
+                <textarea 
+                  className="w-full bg-transparent border-none p-1 text-[11px] leading-tight resize-none min-h-[1.5rem] focus:ring-0 overflow-hidden" 
+                  rows={1} 
+                  value={p.inf} 
+                  placeholder="..." 
+                  onChange={(e) => {
+                    updatePlayer(p.no, 'inf', e.target.value);
+                    adjustHeight(e);
+                  }}
+                  onFocus={adjustHeight}
+                />
+              </td>
+              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-black text-red-600 focus:ring-0" value={p.red} onChange={(e) => updatePlayer(p.no, 'red', e.target.value)} /></td>
             </tr>
           ))}
         </tbody>
