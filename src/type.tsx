@@ -1,6 +1,6 @@
 // --- TYPES & INTERFACES ---
 
-export interface Player {
+interface Player {
   no: number;
   inf: string;
   day: string; 
@@ -8,7 +8,7 @@ export interface Player {
   red: string;
 }
 
-export interface Nomination {
+interface Nomination {
   id: string;
   day: number;
   f: string;
@@ -17,7 +17,7 @@ export interface Nomination {
   note: string;
 }
 
-export interface Death {
+interface Death {
   id: string;
   day: number;
   playerNo: string;
@@ -26,38 +26,53 @@ export interface Death {
   isConfirmed?: boolean;
 }
 
-export interface Character {
+interface Character {
   name: string;
   status: string; // "—" | "POSS" | "CONF" | "NOT"
   note: string;
 }
 
-export interface CharDict {
+interface CharDict {
   Outsider: Character[];
   Minion: Character[];
   Demon: Character[];
 }
 
-export interface RoleDist {
+interface RoleDist {
   townsfolk: number;
   outsiders: number;
   minions: number;
   demons: number;
 }
 
-export interface SortConfig {
+interface SortConfig {
   key: keyof Player | null;
   direction: 'asc' | 'desc';
 }
 
 // --- CONSTANTS ---
 
-export const INITIAL_PLAYERS = 18;
-export const REASON_CYCLE = ['⚔️', '☀️', '🌑', '🌗', '🌕'];
-export const STATUS_OPTIONS = ["—", "POSS", "CONF", "NOT"];
+const INITIAL_PLAYERS = 18;
+const REASON_CYCLE = ['⚔️', '☀️', '🌑', '🌗', '🌕'];
+const STATUS_OPTIONS = ["—", "POSS", "CONF", "NOT"];
 
-export const createInitialChars = (): CharDict => ({
+const createInitialChars = (): CharDict => ({
   Outsider: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
   Minion: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
   Demon: Array(8).fill(null).map(() => ({ name: '', status: '—', note: '' })),
 });
+
+export {
+  type Player,
+  type Nomination,
+  type Death,
+  type Character,
+  type CharDict,
+  type RoleDist,
+  type SortConfig,
+  
+  INITIAL_PLAYERS,
+  REASON_CYCLE,
+  STATUS_OPTIONS,
+  createInitialChars,
+};

@@ -11,8 +11,7 @@ import {
   type Death,
 } from '../../type'
 
-import ReasonPicker from '../ClockPicker/ReasonPicker';
-import ClockPicker from '../ClockPicker/ClockPicker';
+import { ReasonPicker, ClockPicker} from '../ClockPicker/ClockPicker';
 
 // --- COMPONENT 4: DEATH LEDGER ---
 
