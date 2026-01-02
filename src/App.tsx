@@ -59,7 +59,10 @@ export default function App() {
   const [playerCount, setPlayerCount] = useState(() => getStorage('count', 15));
   const [players, setPlayers] = useState<Player[]>(() => getStorage('players', Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' }))));
   const [nominations, setNominations] = useState<Nomination[]>(() => getStorage('nominations', [{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]));
-  const [deaths, setDeaths] = useState<Death[]>(() => getStorage('deaths', []));
+  const [deaths, setDeaths] = useState<Death[]>(() => getStorage('deaths', [
+    { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
+    { id: 'default-night', day: 1, playerNo: '', reason: '🌑', note: '', isConfirmed: true }
+  ]));
   const [chars, setChars] = useState<CharDict>(() => getStorage('chars', createInitialChars()));
   const [roleDist, setRoleDist] = useState<RoleDist>(() => getStorage('dist', { townsfolk: 0, outsiders: 0, minions: 0, demons: 1 }));
   const [note, setNote] = useState(() => getStorage('note', ''));
@@ -135,7 +138,10 @@ export default function App() {
   const reset = () => {
     setPlayers(Array.from({ length: playerCount }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
     setNominations([{ id: Math.random().toString(36), day: 1, f: '-', t: '-', voters: '', note: '' }]);
-    setDeaths([]);
+    setDeaths([
+      { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
+      { id: 'default-night', day: 1, playerNo: '', reason: '🌑', note: '', isConfirmed: true }
+    ]);
     setCurrentDay(1);
     setChars(createInitialChars());
     setNote('');
