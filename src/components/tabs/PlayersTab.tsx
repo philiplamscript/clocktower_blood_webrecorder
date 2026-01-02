@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import PlayerGrid from '../ledger/PlayerGrid';
+import PlayerGrid from '../ledger/PlayerGrid/PlayerGrid';
 
 interface PlayersTabProps {
   players: any[];

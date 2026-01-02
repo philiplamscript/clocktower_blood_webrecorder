@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Plus } from 'lucide-react';
-import VoteLedger from '../ledger/VoteLedger';
+import VoteLedger from '../ledger/VoteLedger/VoteLedger';
 
 interface VotesTabProps {
   nominations: any[];
