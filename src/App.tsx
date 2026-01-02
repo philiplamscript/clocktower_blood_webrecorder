@@ -51,6 +51,12 @@ import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
 import TextRotaryPicker from './Components/RotaryPicker/TextRotaryPicker';
 import {ClockPicker} from './Components/ClockPicker/ClockPicker';
 
+import PlayerInfoPopup from './components/Popups/PlayerInfoPopup';
+import RoleSelectorPopup from './components/Popups/RoleSelectorPopup';
+import RoleUpdatePopup from './components/Popups/RoleUpdatePopup';
+import ResetConfirmation from './components/Popups/ResetConfirmation';
+import FAB from './components/FAB';
+
 export default function App() {
   // Persistence Helper
   const getStorage = (key: string, fallback: any) => {
@@ -311,6 +317,7 @@ export default function App() {
           {activeTab === 'deaths' && <DeathLedger deaths={deaths} setDeaths={setDeaths} deadPlayers={deadPlayers} playerCount={playerCount} />}
           
           {activeTab === 'chars' && (
+            <<dyad-write path="src/App.tsx" description="Completing the refactoring of App.tsx by replacing the remaining popup and FAB sections with the extracted components.">
             <div className="space-y-4">
               <div className="bg-slate-900 rounded border border-slate-800 shadow-2xl overflow-hidden max-w-lg mx-auto">
                 <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800 bg-slate-950">
@@ -374,161 +381,57 @@ export default function App() {
         </div>
       </main>
 
-      {/* QUICK PLAYER INFO POPUP */}
-      {popupPlayerNo !== null && (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setPopupPlayerNo(null)}>
-          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
-            {/* Player Ribbon */}
-            <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
-              <div className="flex flex-wrap items-center gap-1 justify-center">
-                {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
-                  const isDead = deadPlayers.includes(num);
-                  const hasInfo = players.find(p => p.no === num)?.inf !== '';
-                  return (
-                    <button 
-                      key={num} 
-                      onClick={() => setPopupPlayerNo(num)}
-                      className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black transition-all border shadow-sm ${
-                        num === popupPlayerNo
-                          ? 'bg-red-600 text-white border-red-400'
-                          : isDead 
-                            ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
-                            : hasInfo 
-                              ? 'bg-blue-600 text-white border-blue-400' 
-                              : 'bg-slate-700 text-slate-300 border-slate-600'
-                      } active:scale-90`}
-                    >
-                      {isDead ? <Skull size={8} /> : num}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+      {/* Extracted Popups */}
+      <PlayerInfoPopup
+        popupPlayerNo={popupPlayerNo}
+        setPopupPlayerNo={setPopupPlayerNo}
+        playerCount={playerCount}
+        players={players}
+        deadPlayers={deadPlayers}
+        updatePlayerInfo={updatePlayerInfo}
+        togglePlayerAlive={togglePlayerAlive}
+        chars={chars}
+        nominations={nominations}
+        voteHistoryMode={voteHistoryMode}
+        setVoteHistoryMode={setVoteHistoryMode}
+        setShowRoleSelector={setShowRoleSelector}
+        deaths={deaths}
+        setDeaths={setDeaths}
+      />
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {/* Status Toggle */}
-              <div className="bg-slate-50 rounded border p-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <Skull size={12} className="text-red-500" />
-                  <span className="text-[9px] font-black text-slate-600 uppercase">Status</span>
-                </div>
-                <button 
-                  onClick={() => togglePlayerAlive(popupPlayerNo)}
-                  className={`w-full py-2 rounded text-[10px] font-black uppercase transition-colors ${deadPlayers.includes(popupPlayerNo) ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
-                >
-                  {deadPlayers.includes(popupPlayerNo) ? 'DEAD' : 'ALIVE'}
-                </button>
-                {deadPlayers.includes(popupPlayerNo) && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-red-600">Day {players.find(p => p.no === popupPlayerNo)?.day}</span>
-                    <TextRotaryPicker 
-                      value={players.find(p => p.no === popupPlayerNo)?.reason || ''} 
-                      options={REASON_CYCLE} 
-                      onChange={(val) => {
-                        const death = deaths.find(d => parseInt(d.playerNo) === popupPlayerNo);
-                        if (death) {
-                          setDeaths(deaths.map(d => d.id === death.id ? { ...d, reason: val } : d));
-                        }
-                      }}
-                      color="text-red-500"
-                    />
-                  </div>
-                )}
-              </div>
+      <RoleSelectorPopup
+        showRoleSelector={showRoleSelector}
+        setShowRoleSelector={setShowRoleSelector}
+        updatePlayerInfo={updatePlayerInfo}
+        players={players}
+        categoryBg={categoryBg}
+      />
 
-              {/* Player Notepad */}
-              <textarea 
-                autoFocus
-                className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
-                placeholder="Enter player info/role/reads..."
-                value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
-                onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
-              />
+      <RoleUpdatePopup
+        showRoleUpdate={showRoleUpdate}
+        setShowRoleUpdate={setShowRoleUpdate}
+        roleUpdateText={roleUpdateText}
+        setRoleUpdateText={setRoleUpdateText}
+        parseRoleUpdate={parseRoleUpdate}
+      />
 
-              {/* Role Selector */}
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => {
-                    const allRoles = [
-                      ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
-                      ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
-                      ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
-                      ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
-                    ];
-                    setShowRoleSelector({ playerNo: popupPlayerNo, roles: allRoles });
-                  }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
-                >
-                  Select Role
-                </button>
-              </div>
+      <ResetConfirmation
+        showReset={showReset}
+        setShowReset={setShowReset}
+        reset={reset}
+      />
 
-              {/* Vote History */}
-              <div className="bg-slate-50 rounded border p-2 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Vote size={12} className="text-blue-500" />
-                    <span className="text-[9px] font-black text-slate-600 uppercase">Vote History</span>
-                  </div>
-                  <button 
-                    onClick={() => setVoteHistoryMode(voteHistoryMode === 'vote' ? 'beVoted' : 'vote')}
-                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-[8px] font-bold uppercase"
-                  >
-                    {voteHistoryMode === 'vote' ? 'Vote Count' : 'Be Voted Count'}
-                  </button>
-                </div>
-                <VoteHistoryClock 
-                  playerNo={popupPlayerNo} 
-                  nominations={nominations} 
-                  playerCount={playerCount} 
-                  deadPlayers={deadPlayers} 
-                  mode={voteHistoryMode} 
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-[10000]">
-        {fabOpen && (
-          <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-5 fade-in duration-200">
-            {/* Font Size Selector */}
-            <div className="bg-white text-slate-900 border border-slate-200 px-2 py-2 rounded-full shadow-2xl flex items-center gap-1">
-              <Type size={14} className="mx-2 text-slate-400" />
-              {(['small', 'mid', 'large'] as const).map(size => (
-                <button 
-                  key={size}
-                  onClick={() => setFontSize(size)}
-                  className={`px-3 py-1 rounded-full text-[8px] font-black uppercase transition-all ${fontSize === size ? 'bg-slate-900 text-white' : 'hover:bg-slate-100 text-slate-400'}`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-            
-            <button onClick={() => { setShowReset(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
-              <RefreshCcw size={14} className="text-red-500" /> Reset Ledger
-            </button>
-            <button onClick={() => { setShowRoleUpdate(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
-              <Edit size={14} className="text-blue-500" /> Role Update
-            </button>
-            <button className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
-              <Download size={14} className="text-blue-500" /> Export Data
-            </button>
-            <div className="h-px bg-slate-100 mx-4" />
-            <button onClick={addNomination} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
-              <Vote size={14} className="text-blue-500" /> New Nomination
-            </button>
-            <button onClick={addDeath} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
-              <Skull size={14} className="text-red-500" /> Log Death
-            </button>
-          </div>
-        )}
-        <button onClick={() => setFabOpen(!fabOpen)} className={`w-14 h-14 rounded-full flex items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-all active:scale-75 ${fabOpen ? 'bg-slate-900 text-white rotate-45' : 'bg-red-600 text-white'}`}>
-          {fabOpen ? <X size={24} /> : <Plus size={24} />}
-        </button>
-      </div>
+      {/* Extracted FAB */}
+      <FAB
+        fabOpen={fabOpen}
+        setFabOpen={setFabOpen}
+        setShowReset={setShowReset}
+        setShowRoleUpdate={setShowRoleUpdate}
+        addNomination={addNomination}
+        addDeath={addDeath}
+        fontSize={fontSize}
+        setFontSize={setFontSize}
+      />
 
       <div className="bg-white border-t px-3 py-1 text-[9px] font-bold text-slate-400 flex justify-between items-center">
         <span>PLAYERS REGISTERED: {players.filter(p => p.inf).length} / {playerCount}</span>
@@ -536,233 +439,6 @@ export default function App() {
           <div className="h-full bg-red-500" style={{ width: `${(players.filter(p => p.inf).length / playerCount) * 100}%` }} />
         </div>
       </div>
-
-      {showReset && (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded shadow-2xl p-6 max-w-xs text-center space-y-4">
-            <AlertTriangle className="mx-auto text-red-600" size={32} />
-            <h2 className="font-black uppercase tracking-tighter">Confirm Reset?</h2>
-            <div className="flex gap-2">
-              <button onClick={() => setShowReset(false)} className="flex-1 py-2 bg-slate-100 rounded text-[10px] font-bold">CANCEL</button>
-              <button onClick={reset} className="flex-1 py-2 bg-red-600 text-white rounded text-[10px] font-black">RESET ALL</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ROLE SELECTOR POPUP */}
-      {showRoleSelector && (
-        <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setShowRoleSelector(null)}>
-          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[400px] overflow-hidden animate-in fade-in zoom-in-95 duration-150" onClick={e => e.stopPropagation()}>
-            <div className="px-3 py-2 bg-blue-600 flex justify-between items-center">
-              <span className="text-white font-black text-[10px] uppercase">Select Role for Player {showRoleSelector.playerNo}</span>
-              <button onClick={() => setShowRoleSelector(null)} className="text-white/50 hover:text-white"><X size={14} /></button>
-            </div>
-            <div className="p-3 max-h-[320px] overflow-y-auto">
-              {showRoleSelector.roles.length > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="space-y-1">
-                    <h4 className="text-[8px] font-black text-blue-400 uppercase">Townsfolk</h4>
-                    {showRoleSelector.roles.filter(r => r.category === 'Townsfolk').map((item, idx) => (
-                      <button 
-                        key={idx} 
-                        onClick={() => {
-                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
-                          setShowRoleSelector(null);
-                        }}
-                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
-                      >
-                        {item.role}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-[8px] font-black text-blue-200 uppercase">Outsider</h4>
-                    {showRoleSelector.roles.filter(r => r.category === 'Outsider').map((item, idx) => (
-                      <button 
-                        key={idx} 
-                        onClick={() => {
-                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
-                          setShowRoleSelector(null);
-                        }}
-                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
-                      >
-                        {item.role}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-[8px] font-black text-red-400 uppercase">Minions & Demons</h4>
-                    {showRoleSelector.roles.filter(r => r.category === 'Minion' || r.category === 'Demon').map((item, idx) => (
-                      <button 
-                        key={idx} 
-                        onClick={() => {
-                          updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
-                          setShowRoleSelector(null);
-                        }}
-                        className={`${categoryBg[item.category as keyof typeof categoryBg]} text-slate-900 px-2 py-1 rounded text-[9px] font-bold transition-colors text-left`}
-                      >
-                        {item.role}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-slate-500 text-xs">No roles defined yet.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ROLE UPDATE POPUP */}
-      {showRoleUpdate && (
-        <div className="fixed inset-0 z-[10003] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setShowRoleUpdate(false)}>
-          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[500px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-3 py-2 bg-blue-600 flex justify-between items-center">
-              <span className="text-white font-black text-[10px] uppercase">Role Update</span>
-              <button onClick={() => setShowRoleUpdate(false)} className="text-white/50 hover:text-white"><X size={14} /></button>
-            </div>
-            <div className="flex-1 p-3 space-y-3">
-              <textarea 
-                className="w-full min-h-[300px] border border-slate-200 rounded p-2 text-xs font-mono resize-none"
-                placeholder={`鎮民:
-洗衣婦
-圖書管理員
-...
-
-外來者:
-管家
-...
-
-爪牙:
-投毒者
-...
-
-惡魔:
-小惡魔
-...`}
-                value={roleUpdateText}
-                onChange={(e) => setRoleUpdateText(e.target.value)}
-              />
-              <button 
-                onClick={parseRoleUpdate}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-[10px] font-black uppercase transition-colors"
-              >
-                Update Roles Table
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
-
-// Custom Vote History Clock Component
-const VoteHistoryClock = ({ playerNo, nominations, playerCount, deadPlayers, mode }: { playerNo: number, nominations: Nomination[], playerCount: number, deadPlayers: number[], mode: 'vote' | 'beVoted' }) => {
-  const playerStr = playerNo.toString();
-  const votedToCounts: { [key: string]: number } = {};
-  const nominatedCounts: { [key: string]: number } = {};
-  const nominatedByCounts: { [key: string]: number } = {};
-  const nominatedArrows: { from: number, to: number }[] = [];
-  const nominatedByArrows: { from: number, to: number }[] = [];
-
-  nominations.forEach(n => {
-    if (n.voters.includes(playerStr) && n.t && n.t !== '-') {
-      votedToCounts[n.t] = (votedToCounts[n.t] || 0) + 1;
-    }
-    if (n.f === playerStr && n.t && n.t !== '-') {
-      nominatedCounts[n.t] = (nominatedCounts[n.t] || 0) + 1;
-      nominatedArrows.push({ from: playerNo, to: parseInt(n.t) });
-    }
-    if (n.t === playerStr && n.f && n.f !== '-') {
-      nominatedByCounts[n.f] = (nominatedByCounts[n.f] || 0) + 1;
-      nominatedByArrows.push({ from: parseInt(n.f), to: playerNo });
-    }
-  });
-
-  const counts = mode === 'vote' ? votedToCounts : nominatedByCounts;
-  const maxCount = Math.max(...Object.values(counts), 1);
-
-  const players = Array.from({ length: playerCount }, (_, i) => i + 1);
-  const cx = 144, cy = 144, outerRadius = 142, innerRadius = 50;
-
-  const getSlicePath = (index: number, total: number) => {
-    const angleStep = 360 / total;
-    const startAngle = (index * angleStep) - 90;
-    const endAngle = ((index + 1) * angleStep) - 90;
-    const polarToCartesian = (angle: number, radius: number) => ({
-      x: cx + (radius * Math.cos(angle * Math.PI / 180)),
-      y: cy + (radius * Math.sin(angle * Math.PI / 180))
-    });
-    const p1 = polarToCartesian(startAngle, outerRadius);
-    const p2 = polarToCartesian(endAngle, outerRadius);
-    const p3 = polarToCartesian(endAngle, innerRadius);
-    const p4 = polarToCartesian(startAngle, innerRadius);
-    const largeArcFlag = angleStep > 180 ? 1 : 0;
-    return `M ${p1.x} ${p1.y} A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${p2.x} ${p2.y} L ${p3.x} ${p3.y} A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${p4.x} ${p4.y} Z`;
-  };
-
-  const getPosition = (num: number) => {
-    const index = num - 1;
-    const angle = (index * (360 / playerCount)) - 90 + (360 / (playerCount * 2));
-    const rad = 95;
-    return {
-      x: cx + rad * Math.cos(angle * Math.PI / 180),
-      y: cy + rad * Math.sin(angle * Math.PI / 180)
-    };
-  };
-
-  const drawArrow = (from: number, to: number, color: string) => {
-    const fromPos = getPosition(from);
-    const toPos = getPosition(to);
-    const dx = toPos.x - fromPos.x;
-    const dy = toPos.y - fromPos.y;
-    const angle = Math.atan2(dy, dx);
-    const headLength = 8;
-    const headX = toPos.x - headLength * Math.cos(angle);
-    const headY = toPos.y - headLength * Math.sin(angle);
-    const leftX = headX - headLength * Math.cos(angle - Math.PI / 6);
-    const leftY = headY - headLength * Math.sin(angle - Math.PI / 6);
-    const rightX = headX - headLength * Math.cos(angle + Math.PI / 6);
-    const rightY = headY - headLength * Math.sin(angle + Math.PI / 6);
-    return (
-      <g key={`${from}-${to}`}>
-        <line x1={fromPos.x} y1={fromPos.y} x2={headX} y2={headY} stroke={color} strokeWidth="2" />
-        <polygon points={`${headX},${headY} ${leftX},${leftY} ${rightX},${rightY}`} fill={color} />
-      </g>
-    );
-  };
-
-  return (
-    <div className="w-full flex justify-center">
-      <svg viewBox="0 0 288 288" className="w-32 h-32">
-        {players.map((num, i) => {
-          const numStr = num.toString();
-          const intensity = counts[numStr] ? counts[numStr] / maxCount : 0;
-          const isDead = deadPlayers.includes(num);
-          const fill = isDead ? '#f8fafc' : intensity > 0 ? `rgba(239, 68, 68, ${intensity})` : '#ffffff';
-          const stroke = '#f1f5f9';
-          const path = getSlicePath(i, playerCount);
-          const pos = getPosition(num);
-          return (
-            <g key={num}>
-              <path d={path} fill={fill} stroke={stroke} strokeWidth="1" />
-              <text x={pos.x} y={pos.y} textAnchor="middle" alignmentBaseline="middle" className={`text-[12px] font-black pointer-events-none ${intensity > 0 || isDead ? 'fill-white' : 'fill-slate-600'}`}>
-                {num}
-              </text>
-            </g>
-          );
-        })}
-        {/* Arrows for nominated */}
-        {nominatedArrows.map(arrow => drawArrow(arrow.from, arrow.to, '#10b981'))}
-        {/* Arrows for nominated by */}
-        {nominatedByArrows.map(arrow => drawArrow(arrow.from, arrow.to, '#ef4444'))}
-        <circle cx={cx} cy={cy} r="20" fill="#0f172a" />
-        <text x={cx} y={cy - 5} textAnchor="middle" className="text-white text-[10px] font-black">{playerNo}</text>
-        <text x={cx} y={cy + 5} textAnchor="middle" className="text-white text-[6px] font-black uppercase">{mode === 'vote' ? 'VOTE' : 'BE VOTED'}</text>
-      </svg>
-    </div>
-  );
-};
