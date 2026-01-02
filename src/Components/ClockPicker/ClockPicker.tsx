@@ -66,6 +66,7 @@ const ClockPicker = ({
   const [gestureOrigin, setGestureOrigin] = useState<string | null>(null);
   const [gestureCurrent, setGestureCurrent] = useState<string | null>(null);
   const [slideAction, setSlideAction] = useState<'add' | 'remove' | null>(null);
+  const [hasMoved, setHasMoved] = useState(false);
 
   const updatePosition = useCallback(() => {
     const mobile = window.innerWidth < 640;
@@ -127,9 +128,11 @@ const ClockPicker = ({
     setGestureOrigin(null);
     setGestureCurrent(null);
     setSlideAction(null);
+    setHasMoved(false);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    setHasMoved(true);
     if (!isSliding || !svgRef.current) return;
     const touch = e.touches[0];
     const rect = svgRef.current.getBoundingClientRect();
@@ -153,6 +156,13 @@ const ClockPicker = ({
         toggleNumber(num, slideAction!);
       }
     }
+  };
+
+  const handleTouchEnd = (num: number) => {
+    if (!hasMoved) {
+      toggleNumber(num);
+    }
+    handleMouseUp();
   };
 
   const players = Array.from({ length: playerCount }, (_, i) => i + 1);
@@ -226,6 +236,7 @@ const ClockPicker = ({
                   const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
                     e.preventDefault(); 
                     setIsSliding(true); 
+                    setHasMoved(false);
                     if (onSetBoth) { 
                       setGestureOrigin(numStr); 
                       setGestureCurrent(numStr); 
@@ -247,6 +258,7 @@ const ClockPicker = ({
                     <g key={num} 
                       onMouseDown={handleStart}
                       onTouchStart={handleStart}
+                      onTouchEnd={() => handleTouchEnd(num)}
                       onClick={handleClick}
                       onMouseEnter={() => { 
                         if (isSliding) {
