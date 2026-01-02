@@ -71,7 +71,7 @@ export default function App() {
   const [showReset, setShowReset] = useState(false);
   const [fabOpen, setFabOpen] = useState(false);
   const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
-  const [showRoleSelector, setShowRoleSelector] = useState<{ playerNo: number; roles: string[] } | null>(null);
+  const [showRoleSelector, setShowRoleSelector] = useState<{ playerNo: number; roles: { role: string; category: string }[] } | null>(null);
 
   // Auto-Save Effect
   useEffect(() => {
@@ -169,6 +169,13 @@ export default function App() {
 
   const updatePlayerInfo = (no: number, text: string) => {
     setPlayers(prev => prev.map(p => p.no === no ? { ...p, inf: text } : p));
+  };
+
+  const categoryColors = {
+    Townsfolk: 'text-blue-400',
+    Outsider: 'text-blue-200',
+    Minion: 'text-red-400',
+    Demon: 'text-red-600'
   };
 
   return (
@@ -337,14 +344,14 @@ export default function App() {
                 <button 
                   onClick={() => {
                     const allRoles = [
-                      ...chars.Townsfolk.map(c => c.name).filter(n => n),
-                      ...chars.Outsider.map(c => c.name).filter(n => n),
-                      ...chars.Minion.map(c => c.name).filter(n => n),
-                      ...chars.Demon.map(c => c.name).filter(n => n)
-                    ].filter(r => r);
+                      ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
+                      ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
+                      ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
+                      ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
+                    ];
                     if (allRoles.length > 0) {
                       const randomRole = allRoles[Math.floor(Math.random() * allRoles.length)];
-                      updatePlayerInfo(popupPlayerNo, (players.find(p => p.no === popupPlayerNo)?.inf || '') + (players.find(p => p.no === popupPlayerNo)?.inf ? '\n' : '') + randomRole);
+                      updatePlayerInfo(popupPlayerNo, (players.find(p => p.no === popupPlayerNo)?.inf || '') + (players.find(p => p.no === popupPlayerNo)?.inf ? '\n' : '') + randomRole.role);
                     }
                   }}
                   className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
@@ -354,11 +361,11 @@ export default function App() {
                 <button 
                   onClick={() => {
                     const allRoles = [
-                      ...chars.Townsfolk.map(c => c.name).filter(n => n),
-                      ...chars.Outsider.map(c => c.name).filter(n => n),
-                      ...chars.Minion.map(c => c.name).filter(n => n),
-                      ...chars.Demon.map(c => c.name).filter(n => n)
-                    ].filter(r => r);
+                      ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
+                      ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
+                      ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
+                      ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
+                    ];
                     setShowRoleSelector({ playerNo: popupPlayerNo, roles: allRoles });
                   }}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
@@ -439,16 +446,16 @@ export default function App() {
             <div className="p-3 max-h-[320px] overflow-y-auto">
               {showRoleSelector.roles.length > 0 ? (
                 <div className="grid grid-cols-2 gap-2">
-                  {showRoleSelector.roles.map((role, idx) => (
+                  {showRoleSelector.roles.map((item, idx) => (
                     <button 
                       key={idx} 
                       onClick={() => {
-                        updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + role);
+                        updatePlayerInfo(showRoleSelector.playerNo, (players.find(p => p.no === showRoleSelector.playerNo)?.inf || '') + (players.find(p => p.no === showRoleSelector.playerNo)?.inf ? '\n' : '') + item.role);
                         setShowRoleSelector(null);
                       }}
-                      className="bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left"
+                      className={`bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-2 rounded text-[10px] font-bold transition-colors text-left ${categoryColors[item.category as keyof typeof categoryColors]}`}
                     >
-                      {role}
+                      {item.role}
                     </button>
                   ))}
                 </div>
