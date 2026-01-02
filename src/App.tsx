@@ -24,7 +24,8 @@ import {
   X,
   Download,
   Scroll,
-  Type
+  Type,
+  Edit
 } from 'lucide-react';
 
 
@@ -48,6 +49,7 @@ import VoteLedger from './Components/VoteLedger/VoteLedger';
 import DeathLedger from './Components/DeathLedger/DeathLedger';
 import RotaryPicker from './Components/RotaryPicker/RotaryPicker';
 import TextRotaryPicker from './Components/RotaryPicker/TextRotaryPicker';
+import {ClockPicker} from './Components/ClockPicker/ClockPicker';
 
 export default function App() {
   // Persistence Helper
@@ -74,6 +76,8 @@ export default function App() {
   const [fabOpen, setFabOpen] = useState(false);
   const [popupPlayerNo, setPopupPlayerNo] = useState<number | null>(null);
   const [showRoleSelector, setShowRoleSelector] = useState<{ playerNo: number; roles: { role: string; category: string }[] } | null>(null);
+  const [showRoleUpdate, setShowRoleUpdate] = useState(false);
+  const [roleUpdateText, setRoleUpdateText] = useState('');
 
   // Auto-Save Effect
   useEffect(() => {
@@ -171,6 +175,45 @@ export default function App() {
 
   const updatePlayerInfo = (no: number, text: string) => {
     setPlayers(prev => prev.map(p => p.no === no ? { ...p, inf: text } : p));
+  };
+
+  const togglePlayerAlive = (no: number) => {
+    if (deadPlayers.includes(no)) {
+      // Make alive: remove death entry
+      setDeaths(deaths.filter(d => parseInt(d.playerNo) !== no));
+    } else {
+      // Make dead: add death entry
+      setDeaths([...deaths, { id: Math.random().toString(), day: currentDay, playerNo: no.toString(), reason: '🌑', note: '', isConfirmed: true }]);
+    }
+  };
+
+  const parseRoleUpdate = () => {
+    const lines = roleUpdateText.split('\n').map(l => l.trim()).filter(l => l);
+    const newChars: CharDict = {
+      Townsfolk: [],
+      Outsider: [],
+      Minion: [],
+      Demon: []
+    };
+    let currentCategory: keyof CharDict | null = null;
+    lines.forEach(line => {
+      if (line.includes('鎮民:')) currentCategory = 'Townsfolk';
+      else if (line.includes('外來者:')) currentCategory = 'Outsider';
+      else if (line.includes('爪牙:')) currentCategory = 'Minion';
+      else if (line.includes('惡魔:')) currentCategory = 'Demon';
+      else if (currentCategory && line) {
+        newChars[currentCategory].push({ name: line, status: '—', note: '' });
+      }
+    });
+    // Pad to 8
+    Object.keys(newChars).forEach(cat => {
+      while (newChars[cat as keyof CharDict].length < 8) {
+        newChars[cat as keyof CharDict].push({ name: '', status: '—', note: '' });
+      }
+    });
+    setChars(newChars);
+    setShowRoleUpdate(false);
+    setRoleUpdateText('');
   };
 
   const categoryColors = {
@@ -362,14 +405,20 @@ export default function App() {
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {/* Death Info */}
+              {/* Status Toggle */}
               <div className="bg-slate-50 rounded border p-2">
                 <div className="flex items-center gap-2 mb-2">
                   <Skull size={12} className="text-red-500" />
                   <span className="text-[9px] font-black text-slate-600 uppercase">Status</span>
                 </div>
-                {deadPlayers.includes(popupPlayerNo) ? (
-                  <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => togglePlayerAlive(popupPlayerNo)}
+                  className={`w-full py-2 rounded text-[10px] font-black uppercase transition-colors ${deadPlayers.includes(popupPlayerNo) ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+                >
+                  {deadPlayers.includes(popupPlayerNo) ? 'DEAD' : 'ALIVE'}
+                </button>
+                {deadPlayers.includes(popupPlayerNo) && (
+                  <div className="mt-2 flex items-center gap-2">
                     <span className="text-[10px] font-bold text-red-600">Day {players.find(p => p.no === popupPlayerNo)?.day}</span>
                     <TextRotaryPicker 
                       value={players.find(p => p.no === popupPlayerNo)?.reason || ''} 
@@ -383,15 +432,6 @@ export default function App() {
                       color="text-red-500"
                     />
                   </div>
-                ) : (
-                  <button 
-                    onClick={() => {
-                      setDeaths([...deaths, { id: Math.random().toString(), day: currentDay, playerNo: popupPlayerNo.toString(), reason: '🌑', note: '', isConfirmed: true }]);
-                    }}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-[9px] font-black uppercase transition-colors"
-                  >
-                    Mark as Dead
-                  </button>
                 )}
               </div>
 
@@ -430,20 +470,53 @@ export default function App() {
                 </div>
                 {(() => {
                   const playerStr = popupPlayerNo.toString();
-                  const votedTo = new Set<string>();
-                  const nominatedWho = new Set<string>();
-                  const nominatedBy = new Set<string>();
+                  const votedToCounts: { [key: string]: number } = {};
+                  const nominatedCounts: { [key: string]: number } = {};
+                  const nominatedByCounts: { [key: string]: number } = {};
                   nominations.forEach(n => {
-                    if (n.voters.includes(playerStr) && n.t && n.t !== '-') votedTo.add(n.t);
-                    if (n.f === playerStr && n.t && n.t !== '-') nominatedWho.add(n.t);
-                    if (n.t === playerStr && n.f && n.f !== '-') nominatedBy.add(n.f);
+                    if (n.voters.includes(playerStr) && n.t && n.t !== '-') {
+                      votedToCounts[n.t] = (votedToCounts[n.t] || 0) + 1;
+                    }
+                    if (n.f === playerStr && n.t && n.t !== '-') {
+                      nominatedCounts[n.t] = (nominatedCounts[n.t] || 0) + 1;
+                    }
+                    if (n.t === playerStr && n.f && n.f !== '-') {
+                      nominatedByCounts[n.f] = (nominatedByCounts[n.f] || 0) + 1;
+                    }
                   });
+                  const maxCount = Math.max(...Object.values(votedToCounts), ...Object.values(nominatedCounts), ...Object.values(nominatedByCounts), 1);
                   return (
-                    <div className="space-y-1 text-[9px]">
-                      {votedTo.size > 0 && <div><strong>Voted to:</strong> {Array.from(votedTo).join(', ')}</div>}
-                      {nominatedWho.size > 0 && <div><strong>Nominated:</strong> {Array.from(nominatedWho).join(', ')}</div>}
-                      {nominatedBy.size > 0 && <div><strong>Nominated by:</strong> {Array.from(nominatedBy).join(', ')}</div>}
-                      {votedTo.size === 0 && nominatedWho.size === 0 && nominatedBy.size === 0 && <div className="text-slate-400">No vote history.</div>}
+                    <div className="space-y-2">
+                      <div>
+                        <span className="text-[8px] font-black text-slate-500 uppercase">Voted To</span>
+                        <ClockPicker 
+                          value="" 
+                          onChange={() => {}} 
+                          playerCount={playerCount} 
+                          deadPlayers={deadPlayers} 
+                          customHighlights={Object.keys(votedToCounts).map(p => ({ player: parseInt(p), intensity: votedToCounts[p] / maxCount }))} 
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-black text-slate-500 uppercase">Nominated</span>
+                        <ClockPicker 
+                          value="" 
+                          onChange={() => {}} 
+                          playerCount={playerCount} 
+                          deadPlayers={deadPlayers} 
+                          customHighlights={Object.keys(nominatedCounts).map(p => ({ player: parseInt(p), intensity: nominatedCounts[p] / maxCount }))} 
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[8px] font-black text-slate-500 uppercase">Nominated By</span>
+                        <ClockPicker 
+                          value="" 
+                          onChange={() => {}} 
+                          playerCount={playerCount} 
+                          deadPlayers={deadPlayers} 
+                          customHighlights={Object.keys(nominatedByCounts).map(p => ({ player: parseInt(p), intensity: nominatedByCounts[p] / maxCount }))} 
+                        />
+                      </div>
                     </div>
                   );
                 })()}
@@ -472,6 +545,9 @@ export default function App() {
             
             <button onClick={() => { setShowReset(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
               <RefreshCcw size={14} className="text-red-500" /> Reset Ledger
+            </button>
+            <button onClick={() => { setShowRoleUpdate(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
+              <Edit size={14} className="text-blue-500" /> Role Update
             </button>
             <button className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
               <Download size={14} className="text-blue-500" /> Export Data
@@ -570,6 +646,47 @@ export default function App() {
               ) : (
                 <p className="text-slate-500 text-xs">No roles defined yet.</p>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ROLE UPDATE POPUP */}
+      {showRoleUpdate && (
+        <div className="fixed inset-0 z-[10003] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setShowRoleUpdate(false)}>
+          <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[500px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-3 py-2 bg-blue-600 flex justify-between items-center">
+              <span className="text-white font-black text-[10px] uppercase">Role Update</span>
+              <button onClick={() => setShowRoleUpdate(false)} className="text-white/50 hover:text-white"><X size={14} /></button>
+            </div>
+            <div className="flex-1 p-3 space-y-3">
+              <textarea 
+                className="w-full min-h-[300px] border border-slate-200 rounded p-2 text-xs font-mono resize-none"
+                placeholder={`鎮民:
+洗衣婦
+圖書管理員
+...
+
+外來者:
+管家
+...
+
+爪牙:
+投毒者
+...
+
+惡魔:
+小惡魔
+...`}
+                value={roleUpdateText}
+                onChange={(e) => setRoleUpdateText(e.target.value)}
+              />
+              <button 
+                onClick={parseRoleUpdate}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-[10px] font-black uppercase transition-colors"
+              >
+                Update Roles Table
+              </button>
             </div>
           </div>
         </div>
