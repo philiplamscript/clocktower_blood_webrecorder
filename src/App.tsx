@@ -317,7 +317,6 @@ export default function App() {
           {activeTab === 'deaths' && <DeathLedger deaths={deaths} setDeaths={setDeaths} deadPlayers={deadPlayers} playerCount={playerCount} />}
           
           {activeTab === 'chars' && (
-            <<dyad-write path="src/App.tsx" description="Completing the refactoring of App.tsx by replacing the remaining popup and FAB sections with the extracted components.">
             <div className="space-y-4">
               <div className="bg-slate-900 rounded border border-slate-800 shadow-2xl overflow-hidden max-w-lg mx-auto">
                 <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-800 bg-slate-950">
