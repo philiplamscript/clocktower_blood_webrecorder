@@ -27,7 +27,7 @@ import {
   type Nomination,
 } from '../../type'
 
-import {ClockPicker} from '../ClockPicker/ClockPicker';
+import ClockPicker from '../ClockPicker/ClockPicker';
 
 // --- COMPONENT 3: VOTE LEDGER ---
 
@@ -81,7 +81,6 @@ const VoteLedger = ({
             <tr key={n.id} className="h-10">
               <td className="p-0 border-r border-slate-100"><input type="number" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.day} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, day: parseInt(e.target.value) || 1 } : item))} /></td>
               
-              {/* Combined Gesture Pickers for For/Target */}
               <td className="p-0.5 border-r border-slate-100">
                 <ClockPicker playerCount={playerCount} label="F" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
               </td>
