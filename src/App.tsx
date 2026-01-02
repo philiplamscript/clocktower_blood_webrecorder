@@ -95,7 +95,7 @@ export default function App() {
     setDeaths([]);
     setCurrentDay(1);
     setChars(createInitialChars());
-    setRoleDist({ townsfolk: 0, outsiders: 0, minions: 0, demons: 0 });
+    // Role distribution is NOT reset as requested
     setNote('');
     setShowReset(false);
   };
@@ -129,11 +129,11 @@ export default function App() {
       {/* Wrapping Player Hub */}
       <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
         <div className="flex flex-wrap items-center gap-1.5 max-w-4xl mx-auto">
-          {/* Day Controls */}
-          <div className="flex items-center bg-slate-900 rounded-lg h-7 overflow-hidden border border-slate-700 shadow-lg mr-1">
-            <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="px-1.5 hover:bg-slate-800 text-slate-500 transition-colors"><Minus size={10} /></button>
-            <div className="px-2 font-black text-[9px] uppercase text-white bg-slate-800 h-full flex items-center min-w-[3rem] justify-center tracking-tighter">D{currentDay}</div>
-            <button onClick={() => setCurrentDay(currentDay + 1)} className="px-1.5 hover:bg-slate-800 text-slate-500 transition-colors"><Plus size={10} /></button>
+          {/* Narrowed Day Controls */}
+          <div className="flex items-center bg-slate-900 rounded-lg h-7 overflow-hidden border border-slate-700 shadow-lg mr-1 w-[58px]">
+            <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="flex-1 hover:bg-slate-800 text-slate-500 transition-colors flex items-center justify-center"><Minus size={10} /></button>
+            <div className="w-6 font-black text-[9px] text-white bg-slate-800 h-full flex items-center justify-center tracking-tighter border-x border-slate-700">D{currentDay}</div>
+            <button onClick={() => setCurrentDay(currentDay + 1)} className="flex-1 hover:bg-slate-800 text-slate-500 transition-colors flex items-center justify-center"><Plus size={10} /></button>
           </div>
 
           {/* Player Nodes */}
@@ -221,12 +221,15 @@ export default function App() {
                     ].map(d => (
                       <div key={d.key} className="flex flex-col items-center py-1">
                         <span className={`text-[7px] font-black ${d.color}`}>{d.label}</span>
-                        <input 
-                          type="number" 
-                          className="w-full bg-transparent border-none text-center text-[11px] font-black text-white focus:ring-0 p-0" 
+                        <select 
+                          className="w-full bg-transparent border-none text-center text-[11px] font-black text-white focus:ring-0 p-0 cursor-pointer" 
                           value={roleDist[d.key as keyof RoleDist]} 
                           onChange={(e) => setRoleDist({ ...roleDist, [d.key]: parseInt(e.target.value) || 0 })}
-                        />
+                        >
+                          {Array.from({ length: 21 }, (_, i) => (
+                            <option key={i} value={i} className="bg-slate-900 text-white font-mono">{i}</option>
+                          ))}
+                        </select>
                       </div>
                     ))}
                   </div>
