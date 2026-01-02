@@ -60,6 +60,7 @@ const ClockPicker = ({
   const [coords, setCoords] = useState({ top: 0, left: 0, popLeft: false });
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
   const containerRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
   
   const [isSliding, setIsSliding] = useState(false);
   const [gestureOrigin, setGestureOrigin] = useState<string | null>(null);
@@ -86,7 +87,6 @@ const ClockPicker = ({
   useEffect(() => {
     if (isOpen) {
       updatePosition();
-      const handleClose = () => { if(!isSliding) setIsOpen(false); };
       window.addEventListener('resize', updatePosition);
       const handleClickOutside = (e: MouseEvent) => {
         if (containerRef.current && !containerRef.current.contains(e.target as Node) && !isSliding) {
@@ -126,6 +126,33 @@ const ClockPicker = ({
     setIsSliding(false);
     setGestureOrigin(null);
     setGestureCurrent(null);
+    setSlideAction(null);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isSliding || !svgRef.current) return;
+    const touch = e.touches[0];
+    const rect = svgRef.current.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    
+    const dx = touch.clientX - cx;
+    const dy = touch.clientY - cy;
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+    if (angle < 0) angle += 360;
+    
+    const index = Math.floor(angle / (360 / playerCount));
+    const num = (index % playerCount) + 1;
+    const numStr = num.toString();
+
+    if (onSetBoth) {
+      if (numStr !== gestureCurrent) setGestureCurrent(numStr);
+    } else if (isMulti) {
+      if (numStr !== gestureCurrent) {
+        setGestureCurrent(numStr);
+        toggleNumber(num, slideAction!);
+      }
+    }
   };
 
   const players = Array.from({ length: playerCount }, (_, i) => i + 1);
@@ -159,9 +186,15 @@ const ClockPicker = ({
               right: coords.popLeft ? `${window.innerWidth - coords.left}px` : 'auto',
             }}
             onMouseUp={handleMouseUp}
+            onTouchEnd={handleMouseUp}
           >
             <div className="bg-white p-1 rounded-full shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 w-64 h-64 relative">
-              <svg viewBox="0 0 288 288" className="w-full h-full">
+              <svg 
+                ref={svgRef}
+                viewBox="0 0 288 288" 
+                className="w-full h-full touch-none"
+                onTouchMove={handleTouchMove}
+              >
                 {players.map((num, i) => {
                   const numStr = num.toString();
                   const isActive = activeVoters.includes(numStr);
@@ -185,18 +218,31 @@ const ClockPicker = ({
                   const lx = 144 + 95 * Math.cos(angle * Math.PI / 180);
                   const ly = 144 + 95 * Math.sin(angle * Math.PI / 180);
 
+                  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
+                    e.preventDefault(); 
+                    setIsSliding(true); 
+                    if (onSetBoth) { 
+                      setGestureOrigin(numStr); 
+                      setGestureCurrent(numStr); 
+                    } else { 
+                      const action = isActive ? 'remove' : 'add';
+                      setSlideAction(action); 
+                      setGestureCurrent(numStr);
+                      toggleNumber(num, action); 
+                    }
+                  };
+
                   return (
                     <g key={num} 
-                      onMouseDown={(e) => { 
-                        e.preventDefault(); 
-                        setIsSliding(true); 
-                        if (onSetBoth) { setGestureOrigin(numStr); setGestureCurrent(numStr); } 
-                        else { setSlideAction(isActive ? 'remove' : 'add'); toggleNumber(num); }
-                      }}
+                      onMouseDown={handleStart}
+                      onTouchStart={handleStart}
                       onMouseEnter={() => { 
                         if (isSliding) {
                           if (onSetBoth) setGestureCurrent(numStr);
-                          else if (isMulti) toggleNumber(num, slideAction!);
+                          else if (isMulti) {
+                            setGestureCurrent(numStr);
+                            toggleNumber(num, slideAction!);
+                          }
                         }
                       }}
                     >
