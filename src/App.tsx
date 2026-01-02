@@ -117,8 +117,10 @@ export default function App() {
       const death = deaths.find(d => parseInt(d.playerNo) === p.no);
       if (death) {
         return { ...p, day: death.day.toString(), reason: death.reason };
+      } else {
+        // Clear day and reason if no death entry
+        return { ...p, day: '', reason: '' };
       }
-      return p;
     }));
   }, [deaths]);
 

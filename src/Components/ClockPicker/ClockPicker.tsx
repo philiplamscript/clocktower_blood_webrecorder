@@ -158,6 +158,8 @@ const ClockPicker = ({
   const players = Array.from({ length: playerCount }, (_, i) => i + 1);
   const activeVoters = isMulti ? value.split(',').filter(v => v !== "") : [value];
 
+  const pickerSize = isMobile ? Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8) : 256;
+
   return (
     <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
       <button 
@@ -188,7 +190,10 @@ const ClockPicker = ({
             onMouseUp={handleMouseUp}
             onTouchEnd={handleMouseUp}
           >
-            <div className="bg-white p-1 rounded-full shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 w-64 h-64 relative">
+            <div 
+              className="bg-white p-1 rounded-full shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-slate-200 relative"
+              style={{ width: `${pickerSize}px`, height: `${pickerSize}px` }}
+            >
               <svg 
                 ref={svgRef}
                 viewBox="0 0 288 288" 
@@ -232,10 +237,17 @@ const ClockPicker = ({
                     }
                   };
 
+                  const handleClick = (e: React.MouseEvent | React.TouchEvent) => {
+                    if (!isSliding) {
+                      toggleNumber(num);
+                    }
+                  };
+
                   return (
                     <g key={num} 
                       onMouseDown={handleStart}
                       onTouchStart={handleStart}
+                      onClick={handleClick}
                       onMouseEnter={() => { 
                         if (isSliding) {
                           if (onSetBoth) setGestureCurrent(numStr);
@@ -326,4 +338,4 @@ const ReasonPicker = ({ value, onChange }: { value: string, onChange: (val: stri
 };
 
 
-export { ReasonPicker, ClockPicker};
+export { ReasonPicker, ClockPicker };
