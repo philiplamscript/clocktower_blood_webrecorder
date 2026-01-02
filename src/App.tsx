@@ -78,6 +78,7 @@ export default function App() {
   const [showRoleSelector, setShowRoleSelector] = useState<{ playerNo: number; roles: { role: string; category: string }[] } | null>(null);
   const [showRoleUpdate, setShowRoleUpdate] = useState(false);
   const [roleUpdateText, setRoleUpdateText] = useState('');
+  const [voteHistoryMode, setVoteHistoryMode] = useState<'vote' | 'beVoted'>('vote');
 
   // Auto-Save Effect
   useEffect(() => {
