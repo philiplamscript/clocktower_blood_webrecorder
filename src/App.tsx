@@ -19,7 +19,8 @@ import {
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
-  X
+  X,
+  Download
 } from 'lucide-react';
 
 
@@ -98,14 +99,22 @@ export default function App() {
       
       <header className="flex-none bg-slate-900 text-white px-3 py-2 flex justify-between items-center shadow-md z-50">
         <div className="flex items-center gap-1.5"><ShieldAlert className="text-red-500" size={14} /><h1 className="font-black text-xs uppercase italic tracking-tighter">LEDGER PRO v3.7</h1></div>
-        <div className="flex gap-2">
-          <button onClick={() => setShowReset(true)} className="bg-slate-700 hover:bg-red-800 text-[8px] px-2 py-1 rounded font-black uppercase transition-colors">Reset</button>
-          <button className="bg-red-600 hover:bg-red-700 px-4 py-1 rounded text-[9px] font-black shadow-lg transition-colors">EXPORT</button>
+        <div className="flex items-center gap-2">
+          <div className="text-[8px] font-black text-slate-500 uppercase tracking-widest">v3.7.2</div>
         </div>
       </header>
 
-      {/* Quick-Tap Player Ribbon */}
-      <div className="flex-none bg-slate-800 flex items-center overflow-x-auto no-scrollbar border-b border-slate-700 h-10 px-2 gap-2 shadow-inner">
+      {/* Quick-Tap Player Ribbon with Day Select */}
+      <div className="flex-none bg-slate-800 flex items-center overflow-x-auto no-scrollbar border-b border-slate-700 h-12 px-2 gap-2 shadow-inner">
+        {/* Day Controls */}
+        <div className="flex-none flex items-center bg-slate-900 rounded-lg h-8 overflow-hidden border border-slate-700 mr-2 shadow-lg">
+          <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="px-2 hover:bg-slate-800 text-slate-500 transition-colors"><Minus size={10} /></button>
+          <div className="px-2 font-black text-[10px] uppercase text-white bg-slate-800 h-full flex items-center min-w-[3.5rem] justify-center">DAY {currentDay}</div>
+          <button onClick={() => setCurrentDay(currentDay + 1)} className="px-2 hover:bg-slate-800 text-slate-500 transition-colors"><Plus size={10} /></button>
+        </div>
+
+        <div className="flex-none w-px h-4 bg-slate-700" />
+
         {Array.from({ length: 18 }, (_, i) => i + 1).map(num => {
           const isDead = deadPlayers.includes(num);
           const hasInfo = players.find(p => p.no === num)?.inf !== '';
@@ -148,13 +157,7 @@ export default function App() {
         <div className="max-w-4xl mx-auto space-y-3 pb-24">
           
           {(activeTab === 'votes' || activeTab === 'deaths') && (
-            <div className="flex justify-between items-center gap-3">
-              <div className="flex items-center bg-white border rounded shadow-sm h-8 overflow-hidden">
-                <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="px-3 hover:bg-slate-50 border-r"><Minus size={10} /></button>
-                <div className="px-4 font-black text-[10px] uppercase">Day {currentDay}</div>
-                <button onClick={() => setCurrentDay(currentDay + 1)} className="px-3 hover:bg-slate-50 border-l"><Plus size={10} /></button>
-              </div>
-
+            <div className="flex justify-end items-center gap-3">
               {activeTab === 'votes' && (
                 <button onClick={addNomination} className="bg-blue-600 hover:bg-blue-700 text-white px-4 h-8 rounded text-[9px] font-black uppercase flex items-center gap-2 shadow-sm transition-all active:scale-95">
                   <Plus size={12} /> New Nomination
@@ -215,10 +218,17 @@ export default function App() {
         </div>
       </main>
 
-      {/* Global Expandable Floating Action Button (FAB) */}
+      {/* Global Action Menu (FAB) */}
       <div className="fixed bottom-6 right-6 flex flex-col items-end gap-3 z-[10000]">
         {fabOpen && (
           <div className="flex flex-col gap-3 animate-in slide-in-from-bottom-5 fade-in duration-200">
+            <button onClick={() => { setShowReset(true); setFabOpen(false); }} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
+              <RefreshCcw size={14} className="text-red-500" /> Reset Ledger
+            </button>
+            <button className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
+              <Download size={14} className="text-blue-500" /> Export Data
+            </button>
+            <div className="h-px bg-slate-100 mx-4" />
             <button onClick={addNomination} className="bg-white text-slate-900 border border-slate-200 px-4 py-3 rounded-full shadow-2xl flex items-center gap-2 text-[10px] font-black uppercase tracking-wider active:scale-90">
               <Vote size={14} className="text-blue-500" /> New Nomination
             </button>
