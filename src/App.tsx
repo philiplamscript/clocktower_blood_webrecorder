@@ -126,23 +126,37 @@ export default function App() {
         </div>
       </header>
 
-      <div className="flex-none bg-slate-800 flex items-center overflow-x-auto no-scrollbar border-b border-slate-700 h-12 px-2 gap-2 shadow-inner">
-        <div className="flex-none flex items-center bg-slate-900 rounded-lg h-8 overflow-hidden border border-slate-700 mr-2 shadow-lg">
-          <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="px-2 hover:bg-slate-800 text-slate-500 transition-colors"><Minus size={10} /></button>
-          <div className="px-2 font-black text-[10px] uppercase text-white bg-slate-800 h-full flex items-center min-w-[3.5rem] justify-center">DAY {currentDay}</div>
-          <button onClick={() => setCurrentDay(currentDay + 1)} className="px-2 hover:bg-slate-800 text-slate-500 transition-colors"><Plus size={10} /></button>
+      {/* Wrapping Player Hub */}
+      <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
+        <div className="flex flex-wrap items-center gap-1.5 max-w-4xl mx-auto">
+          {/* Day Controls */}
+          <div className="flex items-center bg-slate-900 rounded-lg h-7 overflow-hidden border border-slate-700 shadow-lg mr-1">
+            <button onClick={() => setCurrentDay(Math.max(1, currentDay - 1))} className="px-1.5 hover:bg-slate-800 text-slate-500 transition-colors"><Minus size={10} /></button>
+            <div className="px-2 font-black text-[9px] uppercase text-white bg-slate-800 h-full flex items-center min-w-[3rem] justify-center tracking-tighter">D{currentDay}</div>
+            <button onClick={() => setCurrentDay(currentDay + 1)} className="px-1.5 hover:bg-slate-800 text-slate-500 transition-colors"><Plus size={10} /></button>
+          </div>
+
+          {/* Player Nodes */}
+          {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
+            const isDead = deadPlayers.includes(num);
+            const hasInfo = players.find(p => p.no === num)?.inf !== '';
+            return (
+              <button 
+                key={num} 
+                onClick={() => setPopupPlayerNo(num)}
+                className={`flex-none w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
+                  isDead 
+                    ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                    : hasInfo 
+                      ? 'bg-blue-600 text-white border-blue-400' 
+                      : 'bg-slate-700 text-slate-300 border-slate-600'
+                } active:scale-90`}
+              >
+                {isDead ? <Skull size={10} /> : num}
+              </button>
+            );
+          })}
         </div>
-        <div className="flex-none w-px h-4 bg-slate-700" />
-        {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
-          const isDead = deadPlayers.includes(num);
-          const hasInfo = players.find(p => p.no === num)?.inf !== '';
-          return (
-            <button key={num} onClick={() => setPopupPlayerNo(num)}
-              className={`flex-none w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 ${isDead ? 'bg-slate-900 text-slate-500 border-red-900/50' : hasInfo ? 'bg-blue-600 text-white border-blue-400' : 'bg-slate-700 text-slate-300 border-slate-600'} active:scale-90`}>
-              {isDead ? <Skull size={10} /> : num}
-            </button>
-          );
-        })}
       </div>
 
       <nav className="flex-none bg-white border-b flex shadow-sm z-40">
