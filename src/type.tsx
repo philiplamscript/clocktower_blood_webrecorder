@@ -38,6 +38,13 @@ interface CharDict {
   Demon: Character[];
 }
 
+interface RoleDist {
+  townsfolk: number;
+  outsiders: number;
+  minions: number;
+  demons: number;
+}
+
 interface SortConfig {
   key: keyof Player | null;
   direction: 'asc' | 'desc';
@@ -60,6 +67,7 @@ export {
   type Death,
   type Character,
   type CharDict,
+  type RoleDist,
   type SortConfig,
   
   INITIAL_PLAYERS,
