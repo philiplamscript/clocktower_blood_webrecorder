@@ -92,7 +92,7 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
               <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-mono focus:ring-0" value={p.reason} onChange={(e) => updatePlayer(p.no, 'reason', e.target.value)} /></td>
               <td className="px-1 py-1 border-l border-slate-50">
                 <textarea 
-                  className="w-full bg-transparent border-none p-1 text-[11px] leading-tight resize-none min-h-[1.5rem] focus:ring-0 overflow-hidden" 
+                  className="w-full bg-transparent border-none p-1 text-[11px] leading-tight resize-none focus:ring-0 overflow-hidden" 
                   rows={1} 
                   value={p.inf} 
                   placeholder="..." 

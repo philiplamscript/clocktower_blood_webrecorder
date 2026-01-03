@@ -259,7 +259,13 @@ const ClockPicker = ({
                       onTouchEnd={() => handleTouchEnd(num)}
                       onClick={handleClick}
                       onMouseEnter={() => { 
-                        if (isSliding && isMulti && !onSetBoth) {
+                        if (!isSliding) return; // Only act if a slide gesture is active
+
+                        if (onSetBoth) { // For single-select (from/target) with onSetBoth
+                          if (numStr !== gestureCurrent) {
+                            setGestureCurrent(numStr);
+                          }
+                        } else if (isMulti) { // For multi-select (voters)
                           if (numStr !== gestureCurrent) {
                             setGestureCurrent(numStr);
                             toggleNumber(num, slideAction!);
