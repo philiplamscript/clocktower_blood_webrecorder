@@ -1,12 +1,19 @@
 "use client";
 
 import React from 'react';
-import { X, User, Vote, Skull, Calendar, Target, Hand, FileText } from 'lucide-react';
+import { 
+  Skull,
+  Vote,
+  X
+} from 'lucide-react';
+
+import { REASON_CYCLE } from '../../../type';
+import TextRotaryPicker from '../../pickers/RotaryPicker/TextRotaryPicker';
 import VoteHistoryClock from '../VoteHistoryClock';
 
 interface PlayerInfoPopupProps {
   popupPlayerNo: number | null;
-  setPopupPlayerNo: React.Dispatch<React.SetStateAction<number | null>>;
+  setPopupPlayerNo: (no: number | null) => void;
   playerCount: number;
   players: any[];
   deadPlayers: number[];
@@ -15,10 +22,10 @@ interface PlayerInfoPopupProps {
   chars: any;
   nominations: any[];
   voteHistoryMode: 'vote' | 'beVoted';
-  setVoteHistoryMode: React.Dispatch<React.SetStateAction<'vote' | 'beVoted'>>;
-  setShowRoleSelector: React.Dispatch<React.SetStateAction<any>>;
+  setVoteHistoryMode: (mode: 'vote' | 'beVoted') => void;
+  setShowRoleSelector: (selector: { playerNo: number; roles: { role: string; category: string }[] } | null) => void;
   deaths: any[];
-  setDeaths: React.Dispatch<React.SetStateAction<any[]>>;
+  setDeaths: (deaths: any[]) => void;
 }
 
 const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
@@ -37,92 +44,118 @@ const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
   deaths,
   setDeaths
 }) => {
-  if (!popupPlayerNo) return null;
-
-  const player = players.find((p: any) => p.no === popupPlayerNo);
-  const isDead = deadPlayers.includes(popupPlayerNo);
-  const death = deaths.find((d: any) => parseInt(d.playerNo) === popupPlayerNo);
-  const deathReason = death?.reason || '';
-
-  // Vote history logic
-  const relevantNominations = nominations.filter((n: any) => {
-    if (voteHistoryMode === 'vote') {
-      return n.voters.split(',').includes(popupPlayerNo.toString());
-    } else {
-      return n.f === popupPlayerNo.toString() || n.t === popupPlayerNo.toString();
-    }
-  });
+  if (popupPlayerNo === null) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-full flex flex-col items-center justify-center text-lg font-black border-2 ${isDead ? 'bg-slate-900 text-white border-red-900/50' : 'bg-blue-600 text-white border-blue-400'}`}>
-              <span>{popupPlayerNo}</span>
-              {isDead && <span className="text-[8px] leading-none opacity-75">{deathReason}</span>}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">Player {popupPlayerNo}</h2>
-              <p className="text-slate-600">{isDead ? 'Dead' : 'Alive'}</p>
-            </div>
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setPopupPlayerNo(null)}>
+      <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
+        {/* Player Ribbon */}
+        <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
+          <div className="flex flex-wrap items-center gap-1 justify-center">
+            {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
+              const isDead = deadPlayers.includes(num);
+              const hasInfo = players.find(p => p.no === num)?.inf !== '';
+              return (
+                <button 
+                  key={num} 
+                  onClick={() => setPopupPlayerNo(num)}
+                  className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black transition-all border shadow-sm ${
+                    num === popupPlayerNo
+                      ? 'bg-red-600 text-white border-red-400'
+                      : isDead 
+                        ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                        : hasInfo 
+                          ? 'bg-blue-600 text-white border-blue-400' 
+                          : 'bg-slate-700 text-slate-300 border-slate-600'
+                  } active:scale-90`}
+                >
+                  {isDead ? <Skull size={8} /> : num}
+                </button>
+              );
+            })}
           </div>
-          <button onClick={() => setPopupPlayerNo(null)} className="text-slate-400 hover:text-slate-600">
-            <X size={24} />
-          </button>
         </div>
-        <div className="p-4 space-y-4">
-          {/* Player Info */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Player Info</label>
-            <textarea
-              value={player?.inf || ''}
-              onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
-              className="w-full border border-slate-300 rounded p-2"
-              rows={3}
-            />
-          </textarea>
+
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {/* Status Toggle */}
+          <div className="bg-slate-50 rounded border p-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Skull size={12} className="text-red-500" />
+              <span className="text-[9px] font-black text-slate-600 uppercase">Status</span>
+            </div>
+            <button 
+              onClick={() => togglePlayerAlive(popupPlayerNo)}
+              className={`w-full py-2 rounded text-[10px] font-black uppercase transition-colors ${deadPlayers.includes(popupPlayerNo) ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+            >
+              {deadPlayers.includes(popupPlayerNo) ? 'DEAD' : 'ALIVE'}
+            </button>
+            {deadPlayers.includes(popupPlayerNo) && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-red-600">Day {players.find(p => p.no === popupPlayerNo)?.day}</span>
+                <TextRotaryPicker 
+                  value={players.find(p => p.no === popupPlayerNo)?.reason || ''} 
+                  options={REASON_CYCLE} 
+                  onChange={(val) => {
+                    const death = deaths.find(d => parseInt(d.playerNo) === popupPlayerNo);
+                    if (death) {
+                      setDeaths(deaths.map(d => d.id === death.id ? { ...d, reason: val } : d));
+                    }
+                  }}
+                  color="text-red-500"
+                />
+              </div>
+            )}
           </div>
+
+          {/* Player Notepad */}
+          <textarea 
+            autoFocus
+            className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
+            placeholder="Enter player info/role/reads..."
+            value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
+            onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
+          />
+
+          {/* Role Selector */}
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                const allRoles = [
+                  ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
+                  ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
+                  ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
+                  ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
+                ];
+                setShowRoleSelector({ playerNo: popupPlayerNo, roles: allRoles });
+              }}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
+            >
+              Select Role
+            </button>
+          </div>
+
           {/* Vote History */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg font-semibold">Vote History</h3>
-              <button onClick={() => setVoteHistoryMode(voteHistoryMode === 'vote' ? 'beVoted' : 'vote')} className="text-blue-600 hover:text-blue-800">
-                {voteHistoryMode === 'vote' ? 'Show Nominations' : 'Show Votes'}
+          <div className="bg-slate-50 rounded border p-2 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Vote size={12} className="text-blue-500" />
+                <span className="text-[9px] font-black text-slate-600 uppercase">Vote History</span>
+              </div>
+              <button 
+                onClick={() => setVoteHistoryMode(voteHistoryMode === 'vote' ? 'beVoted' : 'vote')}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-[8px] font-bold uppercase"
+              >
+                {voteHistoryMode === 'vote' ? 'Vote Count' : 'Be Voted Count'}
               </button>
             </div>
-            {/* Player Ribbon */}
-            <div className="flex flex-wrap gap-1 mb-4">
-              {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
-                const isDead = deadPlayers.includes(num);
-                const death = deaths.find((d: any) => parseInt(d.playerNo) === num);
-                const deathReason = death?.reason || '';
-                return (
-                  <button
-                    key={num}
-                    onClick={() => {/* Select player for history or toggle mode */}}
-                    className={`flex-none w-7 h-7 rounded-full flex flex-col items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
-                      isDead
-                        ? 'bg-slate-900 text-white border-red-900/50'
-                        : 'bg-slate-700 text-slate-300 border-slate-600'
-                    } active:scale-90`}
-                  >
-                    <span>{num}</span>
-                    {isDead && <span className="text-[5px] leading-none opacity-75">{deathReason}</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <VoteHistoryClock
-              playerNo={popupPlayerNo}
-              nominations={relevantNominations}
-              voteHistoryMode={voteHistoryMode}
-              deadPlayers={deadPlayers}
-              deaths={deaths}
-              playerCount={playerCount}
+            <VoteHistoryClock 
+              playerNo={popupPlayerNo} 
+              nominations={nominations} 
+              playerCount={playerCount} 
+              deadPlayers={deadPlayers} 
+              mode={voteHistoryMode} 
             />
           </div>
-          {/* Other sections can be added here */}
         </div>
       </div>
     </div>
