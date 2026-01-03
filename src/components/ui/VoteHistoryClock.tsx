@@ -11,7 +11,7 @@ interface VoteHistoryClockProps {
 }
 
 const VoteHistoryClock: React.FC<VoteHistoryClockProps> = ({ playerNo, nominations, deaths, players, voteHistoryMode }) => {
-  const playerCount = Array.isArray(players) ? players.length : 0;
+  const playerCount = players.length;
 
   // Calculate vote counts
   const voteCounts = useMemo(() => {
