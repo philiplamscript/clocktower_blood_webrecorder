@@ -102,11 +102,9 @@ const VoteLedger = ({
                     return (
                       <div 
                         key={num} 
-                        tabIndex={0}
                         onMouseDown={() => { setIsDragging(true); setDragAction(isActive ? 'remove' : 'add'); setLastDraggedPlayer(num); toggleVoter(n.id, num); }}
                         onMouseEnter={() => { if (isDragging && num !== lastDraggedPlayer) { setLastDraggedPlayer(num); toggleVoter(n.id, num, dragAction!); } }}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleVoter(n.id, num); } }}
-                        className={`flex-1 border-r border-slate-50 h-full flex items-center justify-center text-[9px] font-black cursor-crosshair transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        className={`flex-1 border-r border-slate-50 h-full flex items-center justify-center text-[9px] font-black cursor-crosshair transition-all ${
                           isActive 
                             ? 'bg-red-500 text-white shadow-inner' 
                             : isFor 
