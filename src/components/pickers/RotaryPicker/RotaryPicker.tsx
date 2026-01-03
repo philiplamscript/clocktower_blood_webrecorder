@@ -6,27 +6,38 @@ interface RotaryPickerProps {
   max?: number;
   onChange: (val: number) => void;
   color?: string;
+  options?: (string | number)[]; // New prop for custom labels
 }
 
-const RotaryPicker: React.FC<RotaryPickerProps> = ({ value, min = 0, max = 20, onChange, color = "text-white" }) => {
+const RotaryPicker: React.FC<RotaryPickerProps> = ({ 
+  value, 
+  min = 0, 
+  max = 20, 
+  onChange, 
+  color = "text-white",
+  options
+}) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const itemHeight = 24; // height of each number in px
+  const itemHeight = 24;
 
-  const numbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+  const items = options || Array.from({ length: max - min + 1 }, (_, i) => min + i);
+  const currentIndex = options ? value : value - min;
 
   useEffect(() => {
     if (scrollRef.current) {
-      const index = value - min;
-      scrollRef.current.scrollTop = index * itemHeight;
+      scrollRef.current.scrollTop = currentIndex * itemHeight;
     }
-  }, [value, min]);
+  }, [currentIndex]);
 
   const handleScroll = () => {
     if (scrollRef.current) {
       const scrollTop = scrollRef.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
-      const newVal = numbers[index];
-      if (newVal !== undefined && newVal !== value) {
+      
+      // Calculate new value based on index
+      const newVal = options ? index : index + min;
+      
+      if (newVal !== undefined && index >= 0 && index < items.length && newVal !== value) {
         onChange(newVal);
       }
     }
@@ -39,15 +50,15 @@ const RotaryPicker: React.FC<RotaryPickerProps> = ({ value, min = 0, max = 20, o
       className="h-[24px] w-full overflow-y-auto no-scrollbar snap-y snap-mandatory cursor-ns-resize"
       style={{ scrollbarWidth: 'none' }}
     >
-      {numbers.map((num) => (
+      {items.map((item, idx) => (
         <div 
-          key={num} 
-          className={`h-[24px] flex items-center justify-center snap-center text-[11px] font-black transition-opacity ${num === value ? `${color} opacity-100` : 'text-slate-600 opacity-30'}`}
+          key={idx} 
+          className={`h-[24px] flex items-center justify-center snap-center text-[10px] font-black transition-all ${idx === currentIndex ? `${color} opacity-100 scale-110` : 'text-slate-400 opacity-30'}`}
         >
-          {num}
+          {item}
         </div>
       ))}
-      {/* Spacer to allow scrolling to the last element */}
+      {/* Buffer to allow scrolling to the end */}
       <div className="h-0" />
     </div>
   );
