@@ -87,7 +87,9 @@ const VoteLedger = ({
               {/* Replaced ClockPicker with simple input for Target */}
               <td className="p-0 border-r border-slate-100"><input type="text" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.t} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: e.target.value } : item))} /></td>
               
-              <td className="p-0.5 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="V" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
+              {/* Replaced ClockPicker with simple input for Voters */}
+              <td className="p-0 border-r border-slate-100"><input type="text" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.voters} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: e.target.value } : item))} /></td>
+              
               <td className="p-0 border-r border-slate-100 text-center text-[10px] font-black">{n.voters.split(',').filter(v => v !== "").length}</td>
               <td className="p-0">
                 <div className="flex h-10">
