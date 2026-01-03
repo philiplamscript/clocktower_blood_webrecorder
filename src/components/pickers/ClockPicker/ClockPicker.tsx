@@ -47,8 +47,7 @@ const ClockPicker = ({
   deadPlayers = [],
   onSetBoth,
   playerCount = 15,
-  allowSlide = false,
-  deathReasons = {}
+  allowSlide = false
 }: { 
   value: string, 
   onChange: (val: string) => void, 
@@ -59,8 +58,7 @@ const ClockPicker = ({
   deadPlayers?: number[],
   onSetBoth?: (f: string, t: string) => void,
   playerCount?: number,
-  allowSlide?: boolean,
-  deathReasons?: { [playerNo: number]: string }
+  allowSlide?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, popLeft: false });
@@ -302,7 +300,7 @@ const ClockPicker = ({
                     >
                       <path d={path} fill={fill} stroke={stroke} strokeWidth="1" className="cursor-pointer hover:brightness-95 transition-all" />
                       <text x={lx} y={ly} textAnchor="middle" alignmentBaseline="middle" className={`text-[12px] font-black pointer-events-none ${isActive || isFor || isTarget || isGestureOrigin || isGestureCurrent ? 'fill-white' : isDead ? 'fill-slate-300' : 'fill-slate-600'}`}>
-                        {isDead ? (deathReasons[num] || num) : num}
+                        {num}
                       </text>
                     </g>
                   );
