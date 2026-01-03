@@ -59,9 +59,9 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
   };
 
   // Helper for auto-expanding textareas
-  const adjustHeight = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    e.target.style.height = 'inherit';
-    e.target.style.height = `${e.target.scrollHeight}px`;
+  const adjustHeight = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'inherit';
+    textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
   return (
@@ -91,16 +91,10 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
               <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-mono focus:ring-0" value={p.day} onChange={(e) => updatePlayer(p.no, 'day', e.target.value)} /></td>
               <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-mono focus:ring-0" value={p.reason} onChange={(e) => updatePlayer(p.no, 'reason', e.target.value)} /></td>
               <td className="px-1 py-1 border-l border-slate-50">
-                <textarea 
-                  className="w-full bg-transparent border-none p-1 text-[11px] leading-tight resize-none min-h-[1.5rem] focus:ring-0 overflow-hidden" 
-                  rows={1} 
+                <AutoResizeTextarea 
                   value={p.inf} 
+                  onChange={(value) => updatePlayer(p.no, 'inf', value)} 
                   placeholder="..." 
-                  onChange={(e) => {
-                    updatePlayer(p.no, 'inf', e.target.value);
-                    adjustHeight(e);
-                  }}
-                  onFocus={adjustHeight}
                 />
               </td>
               <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-black text-red-600 focus:ring-0" value={p.red} onChange={(e) => updatePlayer(p.no, 'red', e.target.value)} /></td>
@@ -109,6 +103,39 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
         </tbody>
       </table>
     </div>
+  );
+};
+
+// Auto-resizing textarea component
+const AutoResizeTextarea = ({ value, onChange, placeholder }: { value: string, onChange: (value: string) => void, placeholder: string }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      adjustHeight(textareaRef.current);
+    }
+  }, [value]);
+
+  const adjustHeight = (textarea: HTMLTextAreaElement) => {
+    textarea.style.height = 'inherit';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value);
+    adjustHeight(e.target);
+  };
+
+  return (
+    <textarea 
+      ref={textareaRef}
+      className="w-full bg-transparent border-none p-1 text-[11px] leading-tight resize-none min-h-[1.5rem] focus:ring-0 overflow-hidden" 
+      rows={1} 
+      value={value} 
+      placeholder={placeholder} 
+      onChange={handleChange}
+      onFocus={(e) => adjustHeight(e.target)}
+    />
   );
 };
 
