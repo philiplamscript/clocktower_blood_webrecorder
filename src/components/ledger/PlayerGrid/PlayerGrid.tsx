@@ -7,6 +7,7 @@ import {
   ChevronUp,
   ChevronDown,
   Skull,
+  Tag,
 } from 'lucide-react';
 
 import {type Player,
@@ -82,6 +83,9 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
             <th className="px-1 py-1.5 w-8 text-center text-red-500 border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('red')}>
               <div className="flex flex-col items-center"><Skull size={10} /><SortIcon column="red" /></div>
             </th>
+            <th className="px-1 py-1.5 w-12 text-center border-l cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => handleSort('property')}>
+              <div className="flex flex-col items-center"><Tag size={10} /><SortIcon column="property" /></div>
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
@@ -98,6 +102,7 @@ export const PlayerGrid = ({ players, setPlayers }: { players: Player[], setPlay
                 />
               </td>
               <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[11px] font-black text-red-600 focus:ring-0" value={p.red} onChange={(e) => updatePlayer(p.no, 'red', e.target.value)} /></td>
+              <td className="border-l border-slate-50"><input className="w-full text-center bg-transparent border-none p-1 text-[10px] font-bold focus:ring-0" value={p.property} onChange={(e) => updatePlayer(p.no, 'property', e.target.value)} /></td>
             </tr>
           ))}
         </tbody>

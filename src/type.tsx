@@ -6,6 +6,7 @@ interface Player {
   day: string; 
   reason: string; 
   red: string;
+  property: string; // New field for custom property assignments
 }
 
 interface Nomination {

@@ -66,7 +66,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
   const [currentDay, setCurrentDay] = useState(() => getStorage('day', 1));
   const [playerCount, setPlayerCount] = useState(() => getStorage('count', 15));
-  const [players, setPlayers] = useState<Player[]>(() => getStorage('players', Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' }))));
+  const [players, setPlayers] = useState<Player[]>(() => getStorage('players', Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '', property: '' }))));
   const [nominations, setNominations] = useState<Nomination[]>(() => getStorage('nominations', [{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]));
   const [deaths, setDeaths] = useState<Death[]>(() => getStorage('deaths', [
     { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
@@ -84,6 +84,11 @@ export default function App() {
   const [showRoleUpdate, setShowRoleUpdate] = useState(false);
   const [roleUpdateText, setRoleUpdateText] = useState('');
   const [voteHistoryMode, setVoteHistoryMode] = useState<'vote' | 'beVoted'>('vote');
+
+  // New states for assignment modes
+  const [assignmentMode, setAssignmentMode] = useState<'death' | 'property' | null>(null);
+  const [selectedReason, setSelectedReason] = useState<string>('⚔️');
+  const [selectedProperty, setSelectedProperty] = useState<string>('');
 
   // Auto-Save Effect
   useEffect(() => {
@@ -119,7 +124,7 @@ export default function App() {
       if (prev.length === playerCount) return prev;
       if (prev.length < playerCount) {
         const extra = Array.from({ length: playerCount - prev.length }, (_, i) => ({
-          no: prev.length + i + 1, inf: '', day: '', reason: '', red: ''
+          no: prev.length + i + 1, inf: '', day: '', reason: '', red: '', property: ''
         }));
         return [...prev, ...extra];
       }
@@ -149,7 +154,7 @@ export default function App() {
   }, [players]);
 
   const reset = () => {
-    setPlayers(Array.from({ length: playerCount }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
+    setPlayers(Array.from({ length: playerCount }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '', property: '' })));
     setNominations([{ id: Math.random().toString(36), day: 1, f: '-', t: '-', voters: '', note: '' }]);
     setDeaths([
       { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
@@ -236,6 +241,27 @@ export default function App() {
     Demon: 'bg-red-100 hover:bg-red-200'
   };
 
+  // New function to handle player button clicks in assignment mode
+  const handlePlayerClick = (num: number) => {
+    if (assignmentMode === 'death') {
+      // Assign death reason to player
+      const existingDeath = deaths.find(d => parseInt(d.playerNo) === num);
+      if (existingDeath) {
+        // Overwrite existing death
+        setDeaths(deaths.map(d => d.id === existingDeath.id ? { ...d, reason: selectedReason, day: currentDay } : d));
+      } else {
+        // Add new death
+        setDeaths([...deaths, { id: Math.random().toString(), day: currentDay, playerNo: num.toString(), reason: selectedReason, note: '', isConfirmed: true }]);
+      }
+    } else if (assignmentMode === 'property') {
+      // Assign property to player
+      setPlayers(prev => prev.map(p => p.no === num ? { ...p, property: selectedProperty } : p));
+    } else {
+      // Normal behavior: open popup
+      setPopupPlayerNo(num);
+    }
+  };
+
   return (
     <div className={`fixed inset-0 bg-slate-100 flex flex-col font-sans select-none ${fontSizeClass}`} onMouseUp={() => setIsDragging(false)}>
       
@@ -256,20 +282,64 @@ export default function App() {
             <button onClick={() => setCurrentDay(currentDay + 1)} className="flex-1 hover:bg-slate-800 text-slate-500 transition-colors flex items-center justify-center"><Plus size={10} /></button>
           </div>
 
+          {/* Assignment Controls */}
+          <div className="flex items-center gap-1 mr-2">
+            {/* Death Reason Assignment */}
+            <div className="flex items-center bg-slate-900 rounded-lg h-7 overflow-hidden border border-slate-700 shadow-lg">
+              <button 
+                onClick={() => setAssignmentMode(assignmentMode === 'death' ? null : 'death')} 
+                className={`px-2 h-full text-[8px] font-black uppercase tracking-widest transition-colors ${assignmentMode === 'death' ? 'bg-red-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              >
+                DEATH
+              </button>
+              <select 
+                value={selectedReason} 
+                onChange={(e) => setSelectedReason(e.target.value)} 
+                className="bg-slate-800 text-white text-[10px] border-none focus:ring-0 h-full px-1"
+              >
+                {REASON_CYCLE.map(reason => (
+                  <option key={reason} value={reason}>{reason}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Property Assignment */}
+            <div className="flex items-center bg-slate-900 rounded-lg h-7 overflow-hidden border border-slate-700 shadow-lg">
+              <button 
+                onClick={() => setAssignmentMode(assignmentMode === 'property' ? null : 'property')} 
+                className={`px-2 h-full text-[8px] font-black uppercase tracking-widest transition-colors ${assignmentMode === 'property' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}
+              >
+                PROP
+              </button>
+              <input 
+                type="text" 
+                value={selectedProperty} 
+                onChange={(e) => setSelectedProperty(e.target.value)} 
+                placeholder="Type property..." 
+                className="bg-slate-800 text-white text-[10px] border-none focus:ring-0 h-full px-1 w-20"
+              />
+            </div>
+          </div>
+
           {/* Player Nodes */}
           {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
             const isDead = deadPlayers.includes(num);
             const hasInfo = players.find(p => p.no === num)?.inf !== '';
+            const hasProperty = players.find(p => p.no === num)?.property !== '';
             return (
               <button 
                 key={num} 
-                onClick={() => setPopupPlayerNo(num)}
+                onClick={() => handlePlayerClick(num)}
                 className={`flex-none w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
-                  isDead 
-                    ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
-                    : hasInfo 
-                      ? 'bg-blue-600 text-white border-blue-400' 
-                      : 'bg-slate-700 text-slate-300 border-slate-600'
+                  assignmentMode 
+                    ? 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600' 
+                    : isDead 
+                      ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                      : hasInfo 
+                        ? 'bg-blue-600 text-white border-blue-400' 
+                        : hasProperty
+                          ? 'bg-green-600 text-white border-green-400'
+                          : 'bg-slate-700 text-slate-300 border-slate-600'
                 } active:scale-90`}
               >
                 {isDead ? <Skull size={10} /> : num}
