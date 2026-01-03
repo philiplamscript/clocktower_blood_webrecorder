@@ -326,15 +326,17 @@ export default function App() {
             const isDead = deadPlayers.includes(num);
             const hasInfo = players.find(p => p.no === num)?.inf !== '';
             const hasProperty = players.find(p => p.no === num)?.property !== '';
+            const death = deaths.find(d => parseInt(d.playerNo) === num);
+            const deathReason = death?.reason || '';
             return (
               <button 
                 key={num} 
                 onClick={() => handlePlayerClick(num)}
-                className={`flex-none w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
+                className={`flex-none w-7 h-7 rounded-full flex flex-col items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
                   assignmentMode 
                     ? 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600' 
                     : isDead 
-                      ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                      ? 'bg-slate-900 text-white border-red-900/50' 
                       : hasInfo 
                         ? 'bg-blue-600 text-white border-blue-400' 
                         : hasProperty
@@ -342,7 +344,8 @@ export default function App() {
                           : 'bg-slate-700 text-slate-300 border-slate-600'
                 } active:scale-90`}
               >
-                {isDead ? <Skull size={10} /> : num}
+                <span>{num}</span>
+                {isDead && <span className="text-[5px] leading-none opacity-75">{deathReason}</span>}
               </button>
             );
           })}
