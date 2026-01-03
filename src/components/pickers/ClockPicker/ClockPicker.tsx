@@ -47,8 +47,7 @@ const ClockPicker = ({
   deadPlayers = [],
   onSetBoth,
   playerCount = 15,
-  allowSlide = false,
-  deathReasons = {}
+  allowSlide = false
 }: { 
   value: string, 
   onChange: (val: string) => void, 
@@ -59,8 +58,7 @@ const ClockPicker = ({
   deadPlayers?: number[],
   onSetBoth?: (f: string, t: string) => void,
   playerCount?: number,
-  allowSlide?: boolean,
-  deathReasons?: Record<number, string>
+  allowSlide?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, popLeft: false });
@@ -204,11 +202,6 @@ const ClockPicker = ({
 
   const pickerSize = isMobile ? Math.min(window.innerWidth * 0.8, window.innerHeight * 0.8) : 256;
 
-  // Determine center text
-  const selectedNum = parseInt(value);
-  const isSelectedDead = !isNaN(selectedNum) && deadPlayers.includes(selectedNum);
-  const centerText = isSelectedDead && deathReasons[selectedNum] ? deathReasons[selectedNum] : (isMulti ? activeVoters.length : value);
-
   return (
     <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
       <button 
@@ -316,7 +309,7 @@ const ClockPicker = ({
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div className={`w-20 h-20 rounded-full flex flex-col items-center justify-center shadow-inner transition-colors ${onSetBoth && isSliding ? 'bg-red-600' : 'bg-slate-900'}`}>
                   <span className="text-[6px] text-slate-400 font-black uppercase tracking-widest mb-0.5">{onSetBoth && isSliding ? 'SLIDE' : label}</span>
-                  <span className="text-white text-lg font-black leading-none">{centerText}</span>
+                  <span className="text-white text-lg font-black leading-none">{onSetBoth && isSliding ? gestureCurrent : (isMulti ? activeVoters.length : value)}</span>
                 </div>
               </div>
             </div>
