@@ -130,7 +130,7 @@ const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
               }}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
             >
-              Select Role
+              KeyWord
             </button>
           </div>
 
