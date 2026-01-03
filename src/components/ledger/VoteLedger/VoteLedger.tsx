@@ -83,10 +83,10 @@ const VoteLedger = ({
               
               {/* Combined Gesture Pickers for For/Target */}
               <td className="p-0.5 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="F" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+                <ClockPicker playerCount={playerCount} label="F" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} allowSlide={true} />
               </td>
               <td className="p-0.5 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="T" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} />
+                <ClockPicker playerCount={playerCount} label="T" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} allowSlide={true} />
               </td>
               
               <td className="p-0.5 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="V" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>

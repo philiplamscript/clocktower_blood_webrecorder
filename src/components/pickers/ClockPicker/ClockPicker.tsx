@@ -46,7 +46,8 @@ const ClockPicker = ({
   targetValue = "",
   deadPlayers = [],
   onSetBoth,
-  playerCount = 15
+  playerCount = 15,
+  allowSlide = false
 }: { 
   value: string, 
   onChange: (val: string) => void, 
@@ -56,7 +57,8 @@ const ClockPicker = ({
   targetValue?: string,
   deadPlayers?: number[],
   onSetBoth?: (f: string, t: string) => void,
-  playerCount?: number
+  playerCount?: number,
+  allowSlide?: boolean
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [coords, setCoords] = useState({ top: 0, left: 0, popLeft: false });
@@ -154,6 +156,11 @@ const ClockPicker = ({
         setGestureCurrent(numStr);
         toggleNumber(num, slideAction!);
       }
+    } else if (allowSlide) {
+      if (numStr !== gestureCurrent) {
+        setGestureCurrent(numStr);
+        onChange(numStr);
+      }
     }
   };
 
@@ -164,6 +171,25 @@ const ClockPicker = ({
     handleMouseUp();
   };
 
+  const handleMouseEnter = (num: number) => {
+    if (isSliding) {
+      const numStr = num.toString();
+      if (onSetBoth) {
+        if (numStr !== gestureCurrent) setGestureCurrent(numStr);
+      } else if (isMulti) {
+        if (numStr !== gestureCurrent) {
+          setGestureCurrent(numStr);
+          toggleNumber(num, slideAction!);
+        }
+      } else if (allowSlide) {
+        if (numStr !== gestureCurrent) {
+          setGestureCurrent(numStr);
+          onChange(numStr);
+        }
+      }
+    }
+  };
+
   const players = Array.from({ length: playerCount }, (_, i) => i + 1);
   const activeVoters = isMulti ? value.split(',').filter(v => v !== "") : [value];
 
@@ -172,6 +198,7 @@ const ClockPicker = ({
   return (
     <div className="relative w-full h-full flex items-center justify-center" ref={containerRef}>
       <button 
+        tabIndex={0}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full h-7 border rounded text-[10px] font-black flex items-center justify-center transition-all ${
           isOpen ? 'bg-slate-900 border-slate-900 text-white shadow-inner scale-95' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white shadow-sm'
@@ -243,6 +270,10 @@ const ClockPicker = ({
                       const action = isActive ? 'remove' : 'add';
                       setSlideAction(action); 
                       setGestureCurrent(numStr);
+                      toggleNumber(num, action); // Ensure first one is activated
+                    } else if (allowSlide) {
+                      setGestureCurrent(numStr);
+                      onChange(numStr);
                     }
                   };
 
@@ -257,15 +288,8 @@ const ClockPicker = ({
                       onMouseDown={handleStart}
                       onTouchStart={handleStart}
                       onTouchEnd={() => handleTouchEnd(num)}
+                      onMouseEnter={() => handleMouseEnter(num)}
                       onClick={handleClick}
-                      onMouseEnter={() => { 
-                        if (isSliding && isMulti && !onSetBoth) {
-                          if (numStr !== gestureCurrent) {
-                            setGestureCurrent(numStr);
-                            toggleNumber(num, slideAction!);
-                          }
-                        }
-                      }}
                     >
                       <path d={path} fill={fill} stroke={stroke} strokeWidth="1" className="cursor-pointer hover:brightness-95 transition-all" />
                       <text x={lx} y={ly} textAnchor="middle" alignmentBaseline="middle" className={`text-[12px] font-black pointer-events-none ${isActive || isFor || isTarget || isGestureOrigin || isGestureCurrent ? 'fill-white' : isDead ? 'fill-slate-300' : 'fill-slate-600'}`}>
