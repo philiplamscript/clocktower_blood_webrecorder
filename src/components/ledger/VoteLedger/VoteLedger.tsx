@@ -81,13 +81,11 @@ const VoteLedger = ({
             <tr key={n.id} className="h-10">
               <td className="p-0 border-r border-slate-100"><input type="number" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.day} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, day: parseInt(e.target.value) || 1 } : item))} /></td>
               
-              {/* Combined Gesture Pickers for For/Target */}
-              <td className="p-0.5 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="F" value={n.f} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} allowSlide={true} />
-              </td>
-              <td className="p-0.5 border-r border-slate-100">
-                <ClockPicker playerCount={playerCount} label="T" value={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: val } : item))} onSetBoth={(f, t) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f, t } : item))} allowSlide={true} />
-              </td>
+              {/* Replaced ClockPicker with simple input for For */}
+              <td className="p-0 border-r border-slate-100"><input type="text" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.f} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, f: e.target.value } : item))} /></td>
+              
+              {/* Replaced ClockPicker with simple input for Target */}
+              <td className="p-0 border-r border-slate-100"><input type="text" className="w-full text-center border-none bg-transparent focus:ring-0 text-[10px] p-0 font-bold" value={n.t} onChange={(e) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, t: e.target.value } : item))} /></td>
               
               <td className="p-0.5 border-r border-slate-100"><ClockPicker playerCount={playerCount} label="V" isMulti value={n.voters} forValue={n.f} targetValue={n.t} deadPlayers={deadPlayers} onChange={(val) => setNominations(nominations.map((item: any) => item.id === n.id ? { ...item, voters: val } : item))} /></td>
               <td className="p-0 border-r border-slate-100 text-center text-[10px] font-black">{n.voters.split(',').filter(v => v !== "").length}</td>
