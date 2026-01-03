@@ -6,38 +6,27 @@ interface RotaryPickerProps {
   max?: number;
   onChange: (val: number) => void;
   color?: string;
-  options?: (string | number)[]; // New prop for custom labels
 }
 
-const RotaryPicker: React.FC<RotaryPickerProps> = ({ 
-  value, 
-  min = 0, 
-  max = 20, 
-  onChange, 
-  color = "text-white",
-  options
-}) => {
+const RotaryPicker: React.FC<RotaryPickerProps> = ({ value, min = 0, max = 20, onChange, color = "text-white" }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const itemHeight = 24;
+  const itemHeight = 24; // height of each number in px
 
-  const items = options || Array.from({ length: max - min + 1 }, (_, i) => min + i);
-  const currentIndex = options ? value : value - min;
+  const numbers = Array.from({ length: max - min + 1 }, (_, i) => min + i);
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = currentIndex * itemHeight;
+      const index = value - min;
+      scrollRef.current.scrollTop = index * itemHeight;
     }
-  }, [currentIndex]);
+  }, [value, min]);
 
   const handleScroll = () => {
     if (scrollRef.current) {
       const scrollTop = scrollRef.current.scrollTop;
       const index = Math.round(scrollTop / itemHeight);
-      
-      // Calculate new value based on index
-      const newVal = options ? index : index + min;
-      
-      if (newVal !== undefined && index >= 0 && index < items.length && newVal !== value) {
+      const newVal = numbers[index];
+      if (newVal !== undefined && newVal !== value) {
         onChange(newVal);
       }
     }
@@ -50,15 +39,15 @@ const RotaryPicker: React.FC<RotaryPickerProps> = ({
       className="h-[24px] w-full overflow-y-auto no-scrollbar snap-y snap-mandatory cursor-ns-resize"
       style={{ scrollbarWidth: 'none' }}
     >
-      {items.map((item, idx) => (
+      {numbers.map((num) => (
         <div 
-          key={idx} 
-          className={`h-[24px] flex items-center justify-center snap-center text-[10px] font-black transition-all ${idx === currentIndex ? `${color} opacity-100 scale-110` : 'text-slate-400 opacity-30'}`}
+          key={num} 
+          className={`h-[24px] flex items-center justify-center snap-center text-[11px] font-black transition-opacity ${num === value ? `${color} opacity-100` : 'text-slate-600 opacity-30'}`}
         >
-          {item}
+          {num}
         </div>
       ))}
-      {/* Buffer to allow scrolling to the end */}
+      {/* Spacer to allow scrolling to the last element */}
       <div className="h-0" />
     </div>
   );
