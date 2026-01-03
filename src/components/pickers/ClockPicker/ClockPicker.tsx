@@ -190,6 +190,13 @@ const ClockPicker = ({
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsOpen(!isOpen);
+    }
+  };
+
   const players = Array.from({ length: playerCount }, (_, i) => i + 1);
   const activeVoters = isMulti ? value.split(',').filter(v => v !== "") : [value];
 
@@ -200,6 +207,7 @@ const ClockPicker = ({
       <button 
         tabIndex={0}
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={handleKeyDown}
         className={`w-full h-7 border rounded text-[10px] font-black flex items-center justify-center transition-all ${
           isOpen ? 'bg-slate-900 border-slate-900 text-white shadow-inner scale-95' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white shadow-sm'
         }`}
@@ -270,7 +278,6 @@ const ClockPicker = ({
                       const action = isActive ? 'remove' : 'add';
                       setSlideAction(action); 
                       setGestureCurrent(numStr);
-                      toggleNumber(num, action); // Ensure first one is activated
                     } else if (allowSlide) {
                       setGestureCurrent(numStr);
                       onChange(numStr);
