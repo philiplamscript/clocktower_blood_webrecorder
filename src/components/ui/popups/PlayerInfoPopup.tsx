@@ -1,13 +1,19 @@
 "use client";
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Skull, Users, Vote, FileText, X } from 'lucide-react';
-import { ClockPicker } from '../../pickers/ClockPicker/ClockPicker';
+import { 
+  Skull,
+  Vote,
+  X
+} from 'lucide-react';
+
+import { REASON_CYCLE } from '../../../type';
+import TextRotaryPicker from '../../pickers/RotaryPicker/TextRotaryPicker';
 import VoteHistoryClock from '../VoteHistoryClock';
 
 interface PlayerInfoPopupProps {
   popupPlayerNo: number | null;
-  setPopupPlayerNo: React.Dispatch<React.SetStateAction<number | null>>;
+  setPopupPlayerNo: (no: number | null) => void;
   playerCount: number;
   players: any[];
   deadPlayers: number[];
@@ -16,10 +22,10 @@ interface PlayerInfoPopupProps {
   chars: any;
   nominations: any[];
   voteHistoryMode: 'vote' | 'beVoted';
-  setVoteHistoryMode: React.Dispatch<React.SetStateAction<'vote' | 'beVoted'>>;
-  setShowRoleSelector: (val: { playerNo: number; roles: { role: string; category: string }[] } | null) => void;
+  setVoteHistoryMode: (mode: 'vote' | 'beVoted') => void;
+  setShowRoleSelector: (selector: { playerNo: number; roles: { role: string; category: string }[] } | null) => void;
   deaths: any[];
-  setDeaths: React.Dispatch<React.SetStateAction<any[]>>;
+  setDeaths: (deaths: any[]) => void;
 }
 
 const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
@@ -38,204 +44,118 @@ const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
   deaths,
   setDeaths
 }) => {
-  if (!popupPlayerNo) return null;
-
-  const player = players.find(p => p.no === popupPlayerNo);
-  const isDead = deadPlayers.includes(popupPlayerNo);
-  const death = deaths.find(d => parseInt(d.playerNo) === popupPlayerNo);
-  const deathReason = death?.reason || '';
-
-  const handlePrev = () => {
-    setPopupPlayerNo(popupPlayerNo > 1 ? popupPlayerNo - 1 : playerCount);
-  };
-
-  const handleNext = () => {
-    setPopupPlayerNo(popupPlayerNo < playerCount ? popupPlayerNo + 1 : 1);
-  };
-
-  const handlePlayerClick = (num: number) => {
-    setPopupPlayerNo(num);
-  };
+  if (popupPlayerNo === null) return null;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[10000] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header with Player Ribbon */}
-        <div className="bg-slate-900 text-white px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={handlePrev} className="text-slate-400 hover:text-white transition-colors">
-              <ChevronLeft size={20} />
-            </button>
-            <div className="flex items-center gap-1">
-              {/* Player Ribbon */}
-              {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
-                const isCurrent = num === popupPlayerNo;
-                const isDeadRibbon = deadPlayers.includes(num);
-                const hasInfoRibbon = players.find(p => p.no === num)?.inf !== '';
-                const hasPropertyRibbon = players.find(p => p.no === num)?.property !== '';
-                const deathRibbon = deaths.find(d => parseInt(d.playerNo) === num);
-                const deathReasonRibbon = deathRibbon?.reason || '';
-                return (
-                  <button 
-                    key={num} 
-                    onClick={() => handlePlayerClick(num)}
-                    className={`flex-none w-7 h-7 rounded-full flex flex-col items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
-                      isCurrent 
-                        ? 'bg-red-600 text-white border-red-400 scale-110' 
-                        : isDeadRibbon 
-                          ? 'bg-slate-900 text-white border-red-900/50' 
-                          : hasInfoRibbon 
-                            ? 'bg-blue-600 text-white border-blue-400' 
-                            : hasPropertyRibbon
-                              ? 'bg-green-600 text-white border-green-400'
-                              : 'bg-slate-700 text-slate-300 border-slate-600 hover:bg-slate-600'
-                    } active:scale-90`}
-                  >
-                    <span>{num}</span>
-                    {isDeadRibbon && <span className="text-[5px] leading-none opacity-75">{deathReasonRibbon}</span>}
-                  </button>
-                );
-              })}
-            </div>
-            <button onClick={handleNext} className="text-slate-400 hover:text-white transition-colors">
-              <ChevronRight size={20} />
-            </button>
+    <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-[2px]" onClick={() => setPopupPlayerNo(null)}>
+      <div className="bg-white rounded-lg shadow-2xl border border-slate-200 w-full max-w-[400px] max-h-[80vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col" onClick={e => e.stopPropagation()}>
+        {/* Player Ribbon */}
+        <div className="flex-none bg-slate-800 border-b border-slate-700 p-2 shadow-inner">
+          <div className="flex flex-wrap items-center gap-1 justify-center">
+            {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
+              const isDead = deadPlayers.includes(num);
+              const hasInfo = players.find(p => p.no === num)?.inf !== '';
+              return (
+                <button 
+                  key={num} 
+                  onClick={() => setPopupPlayerNo(num)}
+                  className={`flex-none w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black transition-all border shadow-sm ${
+                    num === popupPlayerNo
+                      ? 'bg-red-600 text-white border-red-400'
+                      : isDead 
+                        ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                        : hasInfo 
+                          ? 'bg-blue-600 text-white border-blue-400' 
+                          : 'bg-slate-700 text-slate-300 border-slate-600'
+                  } active:scale-90`}
+                >
+                  {isDead ? <Skull size={8} /> : num}
+                </button>
+              );
+            })}
           </div>
-          <button onClick={() => setPopupPlayerNo(null)} className="text-slate-400 hover:text-white transition-colors">
-            <X size={20} />
-          </button>
         </div>
 
-        {/* Content */}
-        <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
-          {/* Player Info */}
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-black border-2 ${
-              isDead ? 'bg-slate-900 text-white border-red-900/50' : 'bg-blue-600 text-white border-blue-400'
-            }`}>
-              {popupPlayerNo}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-black text-slate-900">Player {popupPlayerNo}</h2>
-              <p className="text-sm text-slate-600">
-                {isDead ? `Dead on Day ${player?.day} (${deathReason})` : 'Alive'}
-              </p>
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {/* Status Toggle */}
+          <div className="bg-slate-50 rounded border p-2">
+            <div className="flex items-center gap-2 mb-2">
+              <Skull size={12} className="text-red-500" />
+              <span className="text-[9px] font-black text-slate-600 uppercase">Status</span>
             </div>
             <button 
-              onClick={() => togglePlayerAlive(popupPlayerNo)} 
-              className={`px-3 py-1 rounded text-xs font-black uppercase transition-colors ${
-                isDead ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
+              onClick={() => togglePlayerAlive(popupPlayerNo)}
+              className={`w-full py-2 rounded text-[10px] font-black uppercase transition-colors ${deadPlayers.includes(popupPlayerNo) ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
             >
-              {isDead ? 'Revive' : 'Kill'}
+              {deadPlayers.includes(popupPlayerNo) ? 'DEAD' : 'ALIVE'}
             </button>
+            {deadPlayers.includes(popupPlayerNo) && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[10px] font-bold text-red-600">Day {players.find(p => p.no === popupPlayerNo)?.day}</span>
+                <TextRotaryPicker 
+                  value={players.find(p => p.no === popupPlayerNo)?.reason || ''} 
+                  options={REASON_CYCLE} 
+                  onChange={(val) => {
+                    const death = deaths.find(d => parseInt(d.playerNo) === popupPlayerNo);
+                    if (death) {
+                      setDeaths(deaths.map(d => d.id === death.id ? { ...d, reason: val } : d));
+                    }
+                  }}
+                  color="text-red-500"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Info Textarea */}
-          <div>
-            <label className="block text-sm font-black text-slate-700 mb-1">NOTES</label>
-            <textarea 
-              className="w-full h-32 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" 
-              placeholder="Add notes about this player..." 
-              value={player?.inf || ''} 
-              onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
-            />
+          {/* Player Notepad */}
+          <textarea 
+            autoFocus
+            className="w-full min-h-[120px] border-none bg-slate-50 rounded p-2 text-xs focus:ring-1 focus:ring-blue-500/50 resize-none font-medium leading-relaxed"
+            placeholder="Enter player info/role/reads..."
+            value={players.find(p => p.no === popupPlayerNo)?.inf || ''}
+            onChange={(e) => updatePlayerInfo(popupPlayerNo, e.target.value)}
+          />
+
+          {/* Role Selector */}
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                const allRoles = [
+                  ...chars.Townsfolk.map(c => ({ role: c.name, category: 'Townsfolk' })).filter(item => item.role),
+                  ...chars.Outsider.map(c => ({ role: c.name, category: 'Outsider' })).filter(item => item.role),
+                  ...chars.Minion.map(c => ({ role: c.name, category: 'Minion' })).filter(item => item.role),
+                  ...chars.Demon.map(c => ({ role: c.name, category: 'Demon' })).filter(item => item.role)
+                ];
+                setShowRoleSelector({ playerNo: popupPlayerNo, roles: allRoles });
+              }}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-[10px] font-black uppercase transition-colors"
+            >
+              Select Role
+            </button>
           </div>
 
           {/* Vote History */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Vote size={16} className="text-slate-600" />
-              <span className="text-sm font-black text-slate-700 uppercase">Vote History</span>
-              <div className="flex bg-slate-100 rounded p-1">
-                <button 
-                  onClick={() => setVoteHistoryMode('vote')} 
-                  className={`px-2 py-1 text-xs font-black rounded transition-colors ${
-                    voteHistoryMode === 'vote' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  Voted
-                </button>
-                <button 
-                  onClick={() => setVoteHistoryMode('beVoted')} 
-                  className={`px-2 py-1 text-xs font-black rounded transition-colors ${
-                    voteHistoryMode === 'beVoted' ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  Voted On
-                </button>
+          <div className="bg-slate-50 rounded border p-2 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Vote size={12} className="text-blue-500" />
+                <span className="text-[9px] font-black text-slate-600 uppercase">Vote History</span>
               </div>
+              <button 
+                onClick={() => setVoteHistoryMode(voteHistoryMode === 'vote' ? 'beVoted' : 'vote')}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-2 py-1 rounded text-[8px] font-bold uppercase"
+              >
+                {voteHistoryMode === 'vote' ? 'Vote Count' : 'Be Voted Count'}
+              </button>
             </div>
             <VoteHistoryClock 
               playerNo={popupPlayerNo} 
               nominations={nominations} 
+              playerCount={playerCount} 
+              deadPlayers={deadPlayers} 
               mode={voteHistoryMode} 
-              playerCount={playerCount}
-              deadPlayers={deadPlayers}
             />
           </div>
-
-          {/* Role Assignment */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Users size={16} className="text-slate-600" />
-              <span className="text-sm font-black text-slate-700 uppercase">Role Assignment</span>
-            </div>
-            <button 
-              onClick={() => {
-                const roles = [];
-                Object.entries(chars).forEach(([category, list]: [string, any]) => {
-                  list.forEach((c: any) => {
-                    if (c.name) roles.push({ role: c.name, category });
-                  });
-                });
-                setShowRoleSelector({ playerNo: popupPlayerNo, roles });
-              }}
-              className="bg-slate-600 text-white px-3 py-2 rounded text-sm font-black hover:bg-slate-700 transition-colors"
-            >
-              Assign Role
-            </button>
-          </div>
-
-          {/* Death Details (if dead) */}
-          {isDead && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Skull size={16} className="text-red-600" />
-                <span className="text-sm font-black text-slate-700 uppercase">Death Details</span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-black text-slate-600 mb-1">DAY</label>
-                  <input 
-                    type="number" 
-                    className="w-full border border-slate-300 rounded px-2 py-1 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent" 
-                    value={death?.day || ''} 
-                    onChange={(e) => setDeaths(deaths.map(d => d.id === death.id ? { ...d, day: parseInt(e.target.value) || 1 } : d))} 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-black text-slate-600 mb-1">REASON</label>
-                  <ClockPicker 
-                    playerCount={playerCount} 
-                    label="D" 
-                    value={death?.playerNo || ''} 
-                    deadPlayers={deadPlayers} 
-                    onChange={(val) => setDeaths(deaths.map(d => d.id === death.id ? { ...d, playerNo: val } : d))} 
-                  />
-                </div>
-              </div>
-              <div className="mt-2">
-                <label className="block text-xs font-black text-slate-600 mb-1">NOTES</label>
-                <textarea 
-                  className="w-full h-20 border border-slate-300 rounded p-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none" 
-                  placeholder="Death notes..." 
-                  value={death?.note || ''} 
-                  onChange={(e) => setDeaths(deaths.map(d => d.id === death.id ? { ...d, note: e.target.value } : d))} 
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
