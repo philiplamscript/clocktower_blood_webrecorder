@@ -33,3 +33,37 @@
 - Use **Toasts** for important user feedback (success/error).
 - Avoid `try/catch` blocks for general logic to allow errors to bubble up during development for easier debugging.
 - Keep the "Ledger" aesthetic: compact, high-density information, and monospaced fonts for numerical data.
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── ledger/           # Main ledger components
+│   │   ├── PlayerGrid.tsx
+│   │   ├── VoteLedger.tsx
+│   │   └── DeathLedger.tsx
+│   ├── pickers/          # Interactive picker components
+│   │   ├── RotaryPicker/
+│   │   │   ├── RotaryPicker.tsx
+│   │   │   └── TextRotaryPicker.tsx
+│   │   └── ClockPicker/
+│   │       └── ClockPicker.tsx
+│   ├── tabs/             # Tab content components
+│   │   ├── PlayersTab.tsx
+│   │   ├── VotesTab.tsx
+│   │   ├── DeathsTab.tsx
+│   │   ├── CharsTab.tsx
+│   │   └── NotesTab.tsx
+│   └── ui/               # UI components and popups
+│       ├── popups/
+│       │   ├── PlayerInfoPopup.tsx
+│       │   ├── RoleSelectorPopup.tsx
+│       │   ├── RoleUpdatePopup.tsx
+│       │   └── ResetConfirmation.tsx
+│       ├── VoteHistoryClock.tsx
+│       └── FAB.tsx
+├── type.tsx              # TypeScript type definitions
+├── App.tsx               # Main application component
+├── main.tsx              # Application entry point
+└── index.css             # Global styles
