@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Calendar, Vote } from 'lucide-react';
-import TextRotaryPicker from '../pickers/RotaryPicker/TextRotaryPicker';
 import { type Nomination } from '../../type';
 
 interface VoteHistoryClockProps {
@@ -12,50 +11,18 @@ interface VoteHistoryClockProps {
 }
 
 const VoteHistoryClock: React.FC<VoteHistoryClockProps> = ({ nominations, playerNo, currentDay }) => {
-  const [selectedDay, setSelectedDay] = useState<string>('All');
-
-  const dayOptions = useMemo(() => {
-    const options = ['All'];
-    for (let i = 1; i <= currentDay; i++) {
-      options.push(i.toString());
-    }
-    return options;
-  }, [currentDay]);
-
-  const filteredNominations = useMemo(() => {
-    if (selectedDay === 'All') return nominations;
-    return nominations.filter(n => n.day === parseInt(selectedDay));
-  }, [nominations, selectedDay]);
-
   const playerVotes = useMemo(() => {
-    return filteredNominations.filter(n => {
+    return nominations.filter(n => {
       const voters = n.voters.split(',').filter(v => v !== '');
       return voters.includes(playerNo.toString()) || n.f === playerNo.toString() || n.t === playerNo.toString();
     });
-  }, [filteredNominations, playerNo]);
-
-  const handleDayChange = (newDay: string) => {
-    if (newDay === dayOptions[dayOptions.length - 1] && selectedDay !== 'All') {
-      // If at last day and changing, cycle back to 'All'
-      setSelectedDay('All');
-    } else {
-      setSelectedDay(newDay);
-    }
-  };
+  }, [nominations, playerNo]);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Calendar size={12} className="text-slate-500" />
         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Vote History</span>
-        <div className="ml-auto w-16">
-          <TextRotaryPicker 
-            value={selectedDay} 
-            options={dayOptions} 
-            onChange={handleDayChange} 
-            color="text-red-500"
-          />
-        </div>
       </div>
 
       <div className="bg-slate-50 rounded border p-3 max-h-48 overflow-y-auto">
