@@ -48,6 +48,7 @@ import PlayersTab from './components/tabs/PlayersTab';
 import VotesTab from './components/tabs/VotesTab';
 import DeathsTab from './components/tabs/DeathsTab';
 import CharsTab from './components/tabs/CharsTab';
+import NotesTab from './components/tabs/NotesTab';
 
 import PlayerInfoPopup from './components/ui/popups/PlayerInfoPopup';
 import RoleSelectorPopup from './components/ui/popups/RoleSelectorPopup';
@@ -62,15 +63,10 @@ export default function App() {
     return saved ? JSON.parse(saved) : fallback;
   };
 
-  const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars'>('players');
+  const [activeTab, setActiveTab] = useState<'players' | 'votes' | 'deaths' | 'chars' | 'notes'>('players');
   const [currentDay, setCurrentDay] = useState(() => getStorage('day', 1));
   const [playerCount, setPlayerCount] = useState(() => getStorage('count', 15));
-  
-  // Initialize players starting from 0
-  const [players, setPlayers] = useState<Player[]>(() => getStorage('players', 
-    Array.from({ length: 16 }, (_, i) => ({ no: i, inf: '', day: '', reason: '', red: '' }))
-  ));
-  
+  const [players, setPlayers] = useState<Player[]>(() => getStorage('players', Array.from({ length: 15 }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' }))));
   const [nominations, setNominations] = useState<Nomination[]>(() => getStorage('nominations', [{ id: '1', day: 1, f: '-', t: '-', voters: '', note: '' }]));
   const [deaths, setDeaths] = useState<Death[]>(() => getStorage('deaths', [
     { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
@@ -118,29 +114,28 @@ export default function App() {
     large: 'text-sm'
   }[fontSize];
 
-  // Effect to sync player array size (including Player 0)
   useEffect(() => {
     setPlayers(prev => {
-      const targetLength = playerCount + 1; // +1 for Player 0
-      if (prev.length === targetLength) return prev;
-      if (prev.length < targetLength) {
-        const extra = Array.from({ length: targetLength - prev.length }, (_, i) => ({
-          no: prev.length + i, inf: '', day: '', reason: '', red: ''
+      if (prev.length === playerCount) return prev;
+      if (prev.length < playerCount) {
+        const extra = Array.from({ length: playerCount - prev.length }, (_, i) => ({
+          no: prev.length + i + 1, inf: '', day: '', reason: '', red: ''
         }));
         return [...prev, ...extra];
       }
-      return prev.slice(0, targetLength);
+      return prev.slice(0, playerCount);
     });
   }, [playerCount]);
 
   // AUTO-SYNC DEATHS TO PLAYERS
   useEffect(() => {
     setPlayers(prev => prev.map(p => {
-      const death = deaths.find(d => d.playerNo !== "" && parseInt(d.playerNo) === p.no);
+      const death = deaths.find(d => parseInt(d.playerNo) === p.no);
       if (death) {
         return { ...p, day: death.day.toString(), reason: death.reason };
       } else {
-        return { ...p, day: p.day || '', reason: p.reason || '' };
+        // Clear day and reason if no death entry
+        return { ...p, day: '', reason: '' };
       }
     }));
   }, [deaths]);
@@ -154,7 +149,7 @@ export default function App() {
   }, [players]);
 
   const reset = () => {
-    setPlayers(Array.from({ length: playerCount + 1 }, (_, i) => ({ no: i, inf: '', day: '', reason: '', red: '' })));
+    setPlayers(Array.from({ length: playerCount }, (_, i) => ({ no: i + 1, inf: '', day: '', reason: '', red: '' })));
     setNominations([{ id: Math.random().toString(36), day: 1, f: '-', t: '-', voters: '', note: '' }]);
     setDeaths([
       { id: 'default-execution', day: 1, playerNo: '', reason: '⚔️', note: '', isConfirmed: true },
@@ -190,8 +185,10 @@ export default function App() {
 
   const togglePlayerAlive = (no: number) => {
     if (deadPlayers.includes(no)) {
+      // Make alive: remove death entry
       setDeaths(deaths.filter(d => parseInt(d.playerNo) !== no));
     } else {
+      // Make dead: add death entry
       setDeaths([...deaths, { id: Math.random().toString(), day: currentDay, playerNo: no.toString(), reason: '🌑', note: '', isConfirmed: true }]);
     }
   };
@@ -199,7 +196,10 @@ export default function App() {
   const parseRoleUpdate = () => {
     const lines = roleUpdateText.split('\n').map(l => l.trim()).filter(l => l);
     const newChars: CharDict = {
-      Townsfolk: [], Outsider: [], Minion: [], Demon: []
+      Townsfolk: [],
+      Outsider: [],
+      Minion: [],
+      Demon: []
     };
     let currentCategory: keyof CharDict | null = null;
     lines.forEach(line => {
@@ -211,6 +211,7 @@ export default function App() {
         newChars[currentCategory].push({ name: line, status: '—', note: '' });
       }
     });
+    // Pad to 8
     Object.keys(newChars).forEach(cat => {
       while (newChars[cat as keyof CharDict].length < 8) {
         newChars[cat as keyof CharDict].push({ name: '', status: '—', note: '' });
@@ -219,6 +220,13 @@ export default function App() {
     setChars(newChars);
     setShowRoleUpdate(false);
     setRoleUpdateText('');
+  };
+
+  const categoryColors = {
+    Townsfolk: 'text-blue-400',
+    Outsider: 'text-blue-200',
+    Minion: 'text-red-400',
+    Demon: 'text-red-600'
   };
 
   const categoryBg = {
@@ -248,8 +256,8 @@ export default function App() {
             <button onClick={() => setCurrentDay(currentDay + 1)} className="flex-1 hover:bg-slate-800 text-slate-500 transition-colors flex items-center justify-center"><Plus size={10} /></button>
           </div>
 
-          {/* Player Nodes (Including 0) */}
-          {Array.from({ length: playerCount + 1 }, (_, i) => i).map(num => {
+          {/* Player Nodes */}
+          {Array.from({ length: playerCount }, (_, i) => i + 1).map(num => {
             const isDead = deadPlayers.includes(num);
             const hasInfo = players.find(p => p.no === num)?.inf !== '';
             return (
@@ -257,13 +265,11 @@ export default function App() {
                 key={num} 
                 onClick={() => setPopupPlayerNo(num)}
                 className={`flex-none w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black transition-all border-2 shadow-sm ${
-                  num === 0 
-                    ? (hasInfo ? 'bg-amber-600 text-white border-amber-400' : 'bg-slate-900 text-amber-500 border-slate-700')
-                    : isDead 
-                      ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
-                      : hasInfo 
-                        ? 'bg-blue-600 text-white border-blue-400' 
-                        : 'bg-slate-700 text-slate-300 border-slate-600'
+                  isDead 
+                    ? 'bg-slate-900 text-slate-500 border-red-900/50 grayscale' 
+                    : hasInfo 
+                      ? 'bg-blue-600 text-white border-blue-400' 
+                      : 'bg-slate-700 text-slate-300 border-slate-600'
                 } active:scale-90`}
               >
                 {isDead ? <Skull size={10} /> : num}
@@ -279,6 +285,7 @@ export default function App() {
           { id: 'votes', icon: Vote, label: 'VOTES' },
           { id: 'deaths', icon: Skull, label: 'DEATHS' },
           { id: 'chars', icon: ShieldAlert, label: 'ROLES' },
+          { id: 'notes', icon: FileText, label: 'NOTES' },
         ].map((t) => (
           <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`flex-1 py-2 flex flex-col items-center gap-0.5 border-b-2 transition-all ${activeTab === t.id ? 'border-red-600 bg-red-50 text-red-600' : 'border-transparent text-slate-400 hover:text-slate-600'}`}>
             <t.icon size={12} /><span className="text-[8px] font-black">{t.label}</span>
@@ -288,14 +295,15 @@ export default function App() {
 
       <main className="flex-1 overflow-y-auto p-3 no-scrollbar relative">
         <div className="max-w-4xl mx-auto space-y-3 pb-24">
-          {activeTab === 'players' && <PlayersTab players={players} setPlayers={setPlayers} note={note} setNote={setNote} />}
+          {activeTab === 'players' && <PlayersTab players={players} setPlayers={setPlayers} />}
           {activeTab === 'votes' && <VotesTab nominations={nominations} setNominations={setNominations} isDragging={isDragging} setIsDragging={setIsDragging} dragAction={dragAction} setDragAction={setDragAction} lastDraggedPlayer={lastDraggedPlayer} setLastDraggedPlayer={setLastDraggedPlayer} deadPlayers={deadPlayers} playerCount={playerCount} addNomination={addNomination} />}
           {activeTab === 'deaths' && <DeathsTab deaths={deaths} setDeaths={setDeaths} deadPlayers={deadPlayers} playerCount={playerCount} addDeath={addDeath} />}
           {activeTab === 'chars' && <CharsTab chars={chars} setChars={setChars} playerCount={playerCount} setPlayerCount={setPlayerCount} roleDist={roleDist} setRoleDist={setRoleDist} />}
+          {activeTab === 'notes' && <NotesTab note={note} setNote={setNote} />}
         </div>
       </main>
 
-      {/* Popups */}
+      {/* Extracted Popups */}
       <PlayerInfoPopup
         popupPlayerNo={popupPlayerNo}
         setPopupPlayerNo={setPopupPlayerNo}
@@ -335,6 +343,7 @@ export default function App() {
         reset={reset}
       />
 
+      {/* Extracted FAB */}
       <FAB
         fabOpen={fabOpen}
         setFabOpen={setFabOpen}
@@ -347,9 +356,9 @@ export default function App() {
       />
 
       <div className="bg-white border-t px-3 py-1 text-[9px] font-bold text-slate-400 flex justify-between items-center">
-        <span>PLAYERS REGISTERED: {players.filter(p => p.no > 0 && p.inf).length} / {playerCount}</span>
+        <span>PLAYERS REGISTERED: {players.filter(p => p.inf).length} / {playerCount}</span>
         <div className="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
-          <div className="h-full bg-red-500" style={{ width: `${(players.filter(p => p.no > 0 && p.inf).length / playerCount) * 100}%` }} />
+          <div className="h-full bg-red-500" style={{ width: `${(players.filter(p => p.inf).length / playerCount) * 100}%` }} />
         </div>
       </div>
     </div>
