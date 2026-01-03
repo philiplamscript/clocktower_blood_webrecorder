@@ -171,6 +171,7 @@ const PlayerInfoPopup: React.FC<PlayerInfoPopupProps> = ({
               nominations={nominations} 
               mode={voteHistoryMode} 
               playerCount={playerCount}
+              deadPlayers={deadPlayers}
             />
           </div>
 
